@@ -1,0 +1,1595 @@
+<!doctype html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Drmonster Ai Preview",
+  "schemaVersion": 1,
+  "description": "DrMonster AI — production commercial-invoice studio backed by Supabase (auth, database, logo storage). Deterministic generator controls numbering, currencies (USD/EUR/GBP/TRY), line items with units, and totals. Draft / finalize / revision workflow with PDF + DOCX export and a live A4 preview. Includes a Claude-powered assistant and an Edit-Existing-Document flow (upload PDF/DOCX/PNG/JPG → preserve original → extract → propose changes → save as a new revision) via Supabase Edge Functions with the key server-side. Requires a Supabase project — see SUPABASE_SETUP.md.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DrMonster AI — Preview</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --sidebar:#0f1420; --sidebar2:#0a0e17;
+    --brand:#2559eb; --brand-hover:#1d47d8; --brand-active:#1e3aae; --brand-50:#eff5ff; --brand-100:#dbe8fe; --brand-400:#6096fa; --brand-700:#1d47d8;
+    --ink-900:#0f1420; --ink-800:#363d4e; --ink-700:#3e485d; --ink-600:#4c5973; --ink-500:#61708c; --ink-400:#8290a8; --ink-300:#aeb7c8; --ink-200:#d4d9e2; --ink-100:#eceef2; --ink-50:#f6f7f9;
+    --emerald-50:#ecfdf5; --emerald-600:#059669; --emerald-700:#047857;
+    --amber-50:#fffbeb; --amber-700:#b45309;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink-900);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:14px;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#cdd3de;border-radius:9999px;border:2px solid transparent;background-clip:content-box}
+
+  /* layout */
+  .app{display:flex;min-height:100vh}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:256px;background:var(--sidebar);color:var(--ink-200);display:flex;flex-direction:column;z-index:30}
+  .main{margin-left:256px;flex:1;min-width:0}
+
+  /* brand */
+  .brand{display:flex;align-items:center;gap:12px;padding:20px}
+  .brand .mark{width:36px;height:36px;border-radius:9px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff}
+  .brand .title{font-size:15px;font-weight:600;color:#fff;letter-spacing:-.01em;line-height:1.1}
+  .brand .title span{color:var(--brand-400)}
+  .brand .sub{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);margin-top:2px}
+
+  nav{flex:1;overflow-y:auto;padding:0 12px 16px}
+  .nav-group{margin-top:22px}
+  .nav-label{padding:0 12px 8px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5a6577}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;font-size:14px;font-weight:500;color:var(--ink-300);cursor:pointer;transition:.15s;margin-bottom:4px}
+  .nav-item:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav-item.active{background:var(--brand);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .nav-item svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:var(--ink-400)}
+  .nav-item.active svg,.nav-item:hover svg{color:#fff}
+  .side-foot{border-top:1px solid rgba(255,255,255,.06);padding:12px}
+  .side-user{display:flex;align-items:center;gap:12px;padding:8px}
+  .avatar{width:36px;height:36px;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+  .side-user .n{color:#fff;font-size:14px;font-weight:500}
+  .side-user .m{color:var(--ink-400);font-size:11px}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid rgba(212,217,226,.7)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 32px}
+  .crumb{display:flex;gap:6px;font-size:12px;font-weight:500;color:var(--ink-400);margin-bottom:2px}
+  .crumb .sep{color:var(--ink-300)}
+  h1.page{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0;color:var(--ink-900)}
+  .subtitle{font-size:14px;color:var(--ink-500);margin:2px 0 0}
+  .search{position:relative}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--ink-400);fill:none;stroke-width:1.75;stroke-linecap:round}
+  .search input{height:36px;width:256px;border:1px solid var(--ink-200);background:rgba(246,247,249,.6);border-radius:9px;padding:0 12px 0 34px;font-size:14px;outline:none}
+  .search input:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(37,89,235,.15)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 1px 2px rgba(15,20,32,.1)}
+  .btn-primary:hover{background:var(--brand-hover)}
+  .btn-primary:disabled{opacity:.55;cursor:not-allowed}
+  .btn-secondary{background:#fff;color:var(--ink-800);border-color:var(--ink-200);box-shadow:0 1px 2px rgba(15,20,32,.04)}
+  .btn-secondary:hover{background:var(--ink-50)}
+  .btn-ghost{background:transparent;color:var(--ink-600)}
+  .btn-ghost:hover{background:var(--ink-100);color:var(--ink-900)}
+  .btn.dashed{border-style:dashed}
+
+  /* containers */
+  .container{max-width:1152px;margin:0 auto;padding:32px}
+  .card{background:#fff;border:1px solid rgba(212,217,226,.7);border-radius:14px;box-shadow:0 1px 3px rgba(15,20,32,.06)}
+  .grid{display:grid;gap:16px}
+  .cols-4{grid-template-columns:repeat(4,1fr)}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:1100px){.cols-4{grid-template-columns:repeat(2,1fr)}}
+
+  .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600}
+  .chip-emerald{background:var(--emerald-50);color:var(--emerald-700)}
+  .chip-amber{background:var(--amber-50);color:var(--amber-700)}
+  .chip-white{background:#fff;color:var(--ink-500);box-shadow:0 1px 2px rgba(15,20,32,.06)}
+  .chip-brand{background:var(--brand-50);color:var(--brand-700)}
+
+  /* stat cards */
+  .stat{padding:20px}
+  .stat .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .stat .label{font-size:14px;font-weight:500;color:var(--ink-500)}
+  .stat .ic{width:36px;height:36px;border-radius:9px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center}
+  .stat .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .stat .val{margin-top:12px;font-size:24px;font-weight:600;letter-spacing:-.02em}
+  .stat .hint{margin-top:4px;font-size:12px;color:var(--ink-400)}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-400);font-weight:600;padding:12px}
+  tbody td{padding:14px 12px;border-top:1px solid var(--ink-100)}
+  tbody tr:hover{background:rgba(246,247,249,.6)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+
+  /* section head */
+  .sec-head{display:flex;gap:12px;margin-bottom:16px}
+  .sec-idx{width:24px;height:24px;border-radius:7px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;margin-top:2px}
+  .sec-head h3{margin:0;font-size:14px;font-weight:600}
+  .sec-head p{margin:0;font-size:12px;color:var(--ink-400)}
+
+  /* form */
+  .lbl{display:block;margin-bottom:6px;font-size:13px;font-weight:500;color:var(--ink-700)}
+  .inp,select.inp,textarea.inp{width:100%;border:1px solid var(--ink-200);background:#fff;border-radius:8px;padding:9px 12px;font-size:14px;color:var(--ink-900);outline:none;box-shadow:0 1px 2px rgba(15,20,32,.04);font-family:inherit}
+  .inp:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,89,235,.15)}
+  textarea.inp{resize:vertical;line-height:1.5}
+  .item-box{border:1px solid var(--ink-200);background:rgba(246,247,249,.5);border-radius:12px;padding:12px}
+  .amount-box{height:38px;display:flex;align-items:center;justify-content:flex-end;border:1px solid var(--ink-200);background:rgba(236,238,242,.7);border-radius:8px;padding:0 12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink-700)}
+  .total-strip{display:flex;align-items:center;justify-content:space-between;background:var(--ink-900);color:#fff;border-radius:12px;padding:12px 16px;margin-top:16px}
+  .total-strip .k{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-300)}
+  .total-strip .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+
+  /* new-invoice split */
+  .split{display:grid;grid-template-columns:minmax(420px,500px) 1fr}
+  @media(max-width:1200px){.split{grid-template-columns:1fr}}
+  .form-col{border-right:1px solid rgba(212,217,226,.7);background:#fff}
+  .form-inner{padding:28px}
+  .form-inner section{margin-bottom:28px}
+  .preview-col{background:var(--ink-50)}
+  .preview-bar{position:sticky;top:73px;display:flex;align-items:center;justify-content:space-between;padding:12px 32px}
+  .preview-bar .lp{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-400)}
+  .preview-canvas{display:flex;justify-content:center;overflow-x:auto;padding:8px 24px 64px}
+
+  .success-bar{border-bottom:1px solid #a7f3d0;background:var(--emerald-50);padding:12px 32px}
+  .success-bar .in{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1500px;margin:0 auto}
+  .success-bar .msg{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--emerald-700)}
+  .success-bar .tick{width:24px;height:24px;border-radius:999px;background:var(--emerald-600);color:#fff;display:flex;align-items:center;justify-content:center}
+  .success-bar .tick svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+  /* A4 sheet */
+  .a4-scale{transform:scale(.72);transform-origin:top center}
+  .a4{width:210mm;min-height:297mm;background:#fff;box-shadow:0 10px 40px -12px rgba(15,20,32,.28);padding:16mm 18mm;color:var(--ink-900);display:flex;flex-direction:column}
+  .a4 .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--ink-200);padding-bottom:20px}
+  .a4 .hd .mk{display:flex;align-items:center;gap:12px}
+  .a4 .hd .mk .m{width:44px;height:44px;border-radius:11px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff}
+  .a4 .hd .nm{font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .a4 .hd .nm span{color:var(--brand)}
+  .a4 .hd .studio{font-size:11px;color:var(--ink-500)}
+  .a4 .title{font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;text-align:right}
+  .a4 .meta{font-size:12.5px;color:var(--ink-600);text-align:right;margin-top:4px}
+  .a4 .meta b{color:var(--ink-800)}
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:24px 0}
+  .party .role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--brand-700);margin-bottom:4px}
+  .party .cn{font-size:13.5px;font-weight:600;color:var(--ink-900)}
+  .party .ln{font-size:12.5px;color:var(--ink-600);line-height:1.55}
+  .party .empty{font-size:12.5px;font-style:italic;color:var(--ink-400)}
+  table.items{font-size:12.5px}
+  table.items thead th{background:var(--ink-50);text-transform:uppercase;font-size:10.5px;letter-spacing:.05em;color:var(--ink-600);padding:8px 12px}
+  table.items thead th:first-child{border-radius:6px 0 0 6px}
+  table.items thead th:last-child{border-radius:0 6px 6px 0}
+  table.items tbody td{border-top:none;border-bottom:1px solid var(--ink-100);padding:12px;vertical-align:top;color:var(--ink-800)}
+  .totbox{display:flex;justify-content:flex-end;margin-top:20px}
+  .totbox .w{width:256px}
+  .totbox .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-600);padding:2px 0}
+  .totbox .grand{display:flex;justify-content:space-between;align-items:center;background:var(--brand);color:#fff;border-radius:6px;padding:8px 12px;margin-top:6px}
+  .totbox .grand .k{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .totbox .grand .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+  .terms{display:grid;grid-template-columns:1fr 1fr;gap:32px;border-top:1px solid var(--ink-200);padding-top:20px;margin-top:32px;font-size:12px}
+  .terms .k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-500);margin-bottom:4px}
+  .terms .v{color:var(--ink-800)}
+  .a4 .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:40px}
+  .a4 .foot .note{font-size:11px;color:var(--ink-400)}
+  .a4 .foot .sig{text-align:right}
+  .a4 .foot .sig .ln{height:1px;width:176px;background:var(--ink-200);margin-bottom:8px}
+  .a4 .foot .sig .cap{font-size:11px;color:var(--ink-500)}
+
+  /* company cards */
+  .co-card{padding:20px;display:flex;flex-direction:column}
+  .co-logo{width:40px;height:40px;border-radius:9px;background:var(--ink-900);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+  .co-name{margin-top:12px;font-size:14px;font-weight:600}
+  .co-country{font-size:12px;color:var(--ink-500)}
+  .co-dl{margin-top:16px;font-size:12.5px;color:var(--ink-600);display:flex;flex-direction:column;gap:6px}
+  .co-dl .r{display:flex;gap:8px}
+  .co-dl .k{width:56px;flex:none;color:var(--ink-400)}
+  .co-actions{margin-top:16px;border-top:1px solid var(--ink-100);padding-top:12px;display:flex;gap:8px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;z-index:40}
+  .scrim{position:absolute;inset:0;background:rgba(15,20,32,.4);backdrop-filter:blur(2px)}
+  .drawer{position:absolute;right:0;top:0;height:100%;width:100%;max-width:448px;background:#fff;box-shadow:-12px 0 40px rgba(15,20,32,.25);display:flex;flex-direction:column}
+  .drawer .dh{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--ink-200);padding:16px 24px}
+  .drawer .dh h2{margin:0;font-size:16px;font-weight:600}
+  .drawer .db{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+  .drawer .df{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--ink-200);padding:16px 24px}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 24px}
+  .empty-state .ic{width:48px;height:48px;border-radius:12px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .mt4{margin-top:16px}.mt6{margin-top:24px}
+  .hero{background:linear-gradient(135deg,var(--brand),#1e3aae);color:#fff;border-radius:14px;padding:20px}
+  .seg{border:1px solid var(--ink-200);background:#fff;color:var(--ink-700);border-radius:8px;padding:8px;font-size:14px;font-weight:500;cursor:pointer}
+  .seg-on{border-color:var(--brand);background:var(--brand);color:#fff}
+  .seg:disabled{cursor:not-allowed}
+  .logo-preview-box{height:56px;width:96px;display:flex;align-items:center;justify-content:center;border:1px solid var(--ink-100);border-radius:8px;background:var(--ink-50);padding:6px;flex:none}
+  .logo-preview-box img{max-height:100%;max-width:100%;object-fit:contain}
+  .hero h2{margin:0;font-size:14px;font-weight:600}
+  .hero p{margin:4px 0 0;font-size:12px;color:#c9d8fe}
+
+  /* auth mode: hide chrome, center a card */
+  .app.auth-mode .sidebar{display:none}
+  .app.auth-mode .main{margin-left:0}
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(1200px 600px at 50% -10%,#eaf0ff,var(--bg))}
+  .auth-card{width:100%;max-width:420px;background:#fff;border:1px solid rgba(212,217,226,.7);border-radius:16px;box-shadow:0 20px 50px -20px rgba(15,20,32,.35);padding:28px}
+  .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .auth-brand .mark{width:40px;height:40px;border-radius:10px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff}
+  .auth-brand .title{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .auth-brand .title span{color:var(--brand)}
+  .auth-brand .sub{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-400);margin-top:1px}
+  .auth-card h2{margin:0 0 4px;font-size:18px;font-weight:700}
+  .auth-card .lead{margin:0 0 20px;font-size:13px;color:var(--ink-500)}
+  .auth-note{font-size:12px;color:var(--ink-500);background:var(--brand-50);border:1px solid var(--brand-100);border-radius:10px;padding:10px 12px;margin-top:14px;line-height:1.5}
+  .auth-err{font-size:13px;color:#b42318;background:#fef3f2;border:1px solid #fecdca;border-radius:10px;padding:10px 12px;margin-bottom:14px}
+  .auth-ok{font-size:13px;color:var(--emerald-700);background:var(--emerald-50);border:1px solid #a7f3d0;border-radius:10px;padding:10px 12px;margin-bottom:14px}
+  .auth-alt{margin-top:16px;font-size:13px;color:var(--ink-500);text-align:center}
+  .auth-alt a{color:var(--brand);font-weight:600;cursor:pointer}
+  .link-btn{background:none;border:none;color:var(--brand);font-weight:600;cursor:pointer;font-size:13px;padding:0}
+  .spin{width:34px;height:34px;border-radius:999px;border:3px solid var(--ink-100);border-top-color:var(--brand);animation:spin .7s linear infinite;margin:0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:var(--ink-900);color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;box-shadow:0 10px 30px -10px rgba(15,20,32,.5);max-width:440px}
+  .toast.err{background:#b42318}
+
+  /* drawer sub-heading */
+  .drawer-sub{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-400);margin:4px 0 -4px;padding-top:8px;border-top:1px solid var(--ink-100)}
+  .drawer-sub:first-child{border-top:none;padding-top:0}
+  .bank-line{font-size:11px;color:var(--ink-600);line-height:1.5}
+  .bank-line b{color:var(--ink-800);font-weight:600}
+  .row-4{display:grid;grid-template-columns:1fr .8fr 1fr 1fr;gap:12px}
+
+  /* finalized lock banner */
+  .lockbar{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--amber-50);border:1px solid #fde68a;border-radius:12px;padding:14px 16px}
+  .lockbar .msg{font-size:13px;color:var(--amber-700);display:flex;align-items:center;gap:8px}
+
+  /* preview / export modal */
+  .pv-scrim{position:fixed;inset:0;background:rgba(15,20,32,.55);backdrop-filter:blur(3px);z-index:50;display:flex;flex-direction:column}
+  .pv-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:#fff;border-bottom:1px solid var(--ink-200)}
+  .pv-bar h3{margin:0;font-size:15px;font-weight:600}
+  .pv-bar .sub{font-size:12px;color:var(--ink-400);margin-top:1px}
+  .pv-scroll{flex:1;overflow:auto;padding:24px;display:flex;justify-content:center;align-items:flex-start}
+  .pv-sheet{transform:scale(.82);transform-origin:top center}
+  @media(max-width:900px){.pv-sheet{transform:scale(.5)}}
+
+  /* AI assistant panel */
+  .ai-card{border:1px solid var(--brand-100);background:linear-gradient(180deg,var(--brand-50),#fff);border-radius:14px;padding:16px;margin-bottom:24px}
+  .ai-badge{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.02em;flex:none}
+  .ai-modal{width:100%;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 24px 60px -20px rgba(15,20,32,.5);display:flex;flex-direction:column;max-height:86vh;margin:auto}
+  .ai-modal-h{padding:18px 20px;border-bottom:1px solid var(--ink-200)}
+  .ai-modal-b{padding:16px 20px;overflow:auto}
+  .ai-modal-f{padding:14px 20px;border-top:1px solid var(--ink-200);display:flex;justify-content:flex-end;gap:8px}
+  .ai-warn{background:var(--amber-50);border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--amber-700);margin-bottom:12px;display:flex;flex-direction:column;gap:4px}
+  .ai-need{background:var(--brand-50);border:1px solid var(--brand-100);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink-700);margin-bottom:12px}
+  .diff-list{display:flex;flex-direction:column}
+  .diff-row{display:flex;gap:12px;padding:9px 2px;border-bottom:1px solid var(--ink-100);font-size:13px}
+  .diff-row:last-child{border-bottom:none}
+  .diff-k{width:130px;flex:none;color:var(--ink-500);font-weight:500}
+  .diff-v{flex:1;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .diff-v .old{color:var(--ink-400);text-decoration:line-through}
+  .diff-v .arrow{color:var(--ink-300)}
+  .diff-v .new{color:var(--ink-900);font-weight:600}
+
+  /* edit-existing-document: dropzone + source panel */
+  .dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 24px;background:#fff;border:2px dashed var(--ink-200);border-radius:16px;cursor:pointer;transition:.15s}
+  .dropzone:hover{border-color:var(--brand);background:var(--brand-50)}
+  .dropzone.drag{border-color:var(--brand);background:var(--brand-50)}
+  .src-card{border:1px solid var(--ink-200);background:#fff;border-radius:14px;padding:16px;margin-bottom:24px}
+  .src-badge{width:30px;height:30px;border-radius:8px;background:var(--ink-900);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex:none}
+  .src-note{font-size:12px;color:var(--ink-600);background:var(--amber-50);border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin-top:12px;line-height:1.5}
+
+  /* print output */
+  #print-root{display:none}
+  @media print{
+    body>.app,#toast,.overlay,.pv-scrim{display:none!important}
+    #print-root{display:block!important}
+    @page{size:A4;margin:0}
+    html,body{background:#fff!important}
+    #print-root .a4{box-shadow:none!important;margin:0 auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="mark">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><circle cx="9.5" cy="12" r="1.4" fill="#fff"/><circle cx="14.5" cy="12" r="1.4" fill="#fff"/><path d="M6 10.5C6 8.6 7.6 7 9.5 7h5C16.4 7 18 8.6 18 10.5V17l-1.6-1.1a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0l-.8-.6a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0L8.4 15.9a1 1 0 0 0-1.2 0L6 17z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="title">DrMonster <span>AI</span></div>
+        <div class="sub">Document Studio</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-foot">
+      <div class="side-user" id="side-user">
+        <div class="avatar">DM</div>
+        <div><div class="n">Operations</div><div class="m">internal workspace</div></div>
+      </div>
+    </div>
+  </aside>
+  <div class="main" id="main"></div>
+</div>
+<div id="print-root" aria-hidden="true"></div>
+
+<script>
+/* ---------------- data ---------------- */
+/* Currency system — single source of truth. Add a currency by appending one row
+   here (code, symbol, name, decimals); the whole app picks it up automatically. */
+const CURRENCIES = [
+  {code:"USD", symbol:"$",   name:"US Dollar",     decimals:2},
+  {code:"EUR", symbol:"€",   name:"Euro",          decimals:2},
+  {code:"GBP", symbol:"£",   name:"British Pound", decimals:2},
+  {code:"TRY", symbol:"₺",   name:"Turkish Lira",  decimals:2},
+];
+const CUR = Object.fromEntries(CURRENCIES.map(c=>[c.code,c.symbol]));
+const CUR_LIST = CURRENCIES.map(c=>[c.code,c.name]);
+function curDef(code){ return CURRENCIES.find(c=>c.code===code)||{code,symbol:code,decimals:2}; }
+function money(v,code){const c=curDef(code);const s=c.symbol;const f=new Intl.NumberFormat("en-US",{minimumFractionDigits:c.decimals,maximumFractionDigits:c.decimals}).format(isFinite(v)?v:0);return s.length>1?s+" "+f:s+f;}
+/* Deterministic money rounding to the currency's decimal places (never trust float drift). */
+function roundMoney(v,code){const d=curDef(code).decimals;const p=Math.pow(10,d);return Math.round((isFinite(v)?v:0)*p)/p;}
+function lineTotal(it,code){return roundMoney((isFinite(it.quantity)?it.quantity:0)*(isFinite(it.unitPrice)?it.unitPrice:0),code);}
+function computeTotals(items,code){const subtotal=roundMoney(items.reduce((s,i)=>s+lineTotal(i,code),0),code);return {subtotal, total:subtotal};}
+function fdate(iso){if(!iso)return "—";const d=new Date(iso);if(isNaN(d))return iso;return d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}
+function lt(i){return (isFinite(i.quantity)?i.quantity:0)*(isFinite(i.unitPrice)?i.unitPrice:0);}
+function sub(items){return items.reduce((s,i)=>s+lt(i),0);}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function uid(p){return p+"_"+Math.random().toString(36).slice(2,8);}
+
+/* In-memory caches, populated from Supabase after sign-in. */
+let companies = [];   // [{id,name,address,city,country,taxId,registration,phone,email,website,currency,notes,bank:{...},logoPath,logoKey}]
+let invoices  = [];   // saved documents mapped for rendering
+const files   = {};   // logoPath -> {key,name,mimeType,dataUrl(signed),width,height}
+
+/* ---------------- logo sizing helpers ---------------- */
+const LOGO_CAPS={small:{w:150,h:40},medium:{w:200,h:56},large:{w:260,h:76}};
+const ALLOWED_LOGO="image/png,image/jpeg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg";
+function fitLogo(nw,nh,cap){ if(!nw||!nh){const h=cap.h,w=Math.min(cap.w,h*3);return{w:Math.round(w),h:Math.round(h)};} const s=Math.min(cap.w/nw,cap.h/nh,1); return {w:Math.round(nw*s),h:Math.round(nh*s)}; }
+function resolveLogo(d){ if(d.logoMode==="hidden")return null; if(d.logoMode==="custom")return d.customLogoKey?files[d.customLogoKey]:null; const s=companies.find(c=>c.id===d.sellerId); return s&&s.logoKey?files[s.logoKey]:null; }
+function validLogo(file){ return /(image\/(png|jpe?g|webp|svg))|\.(png|jpe?g|webp|svg)$/i.test((file.type||"")+" "+file.name); }
+
+/* ---------------- Supabase client (REST only, no external deps, anon key only) ---------------- */
+const LSK={url:"drm_sb_url",key:"drm_sb_key",session:"drm_sb_session"};
+const SB={
+  url: localStorage.getItem(LSK.url)||"",
+  key: localStorage.getItem(LSK.key)||"",
+  session: (()=>{try{return JSON.parse(localStorage.getItem(LSK.session)||"null");}catch(e){return null;}})(),
+  configured(){ return !!(this.url && this.key); },
+  get uid(){ return this.session && this.session.user ? this.session.user.id : null; },
+  get email(){ return this.session && this.session.user ? this.session.user.email : ""; },
+  get host(){ try{ return new URL(this.url).host; }catch(e){ return this.url; } },
+  setConfig(url,key){ this.url=(url||"").trim().replace(/\/+$/,""); this.key=(key||"").trim(); localStorage.setItem(LSK.url,this.url); localStorage.setItem(LSK.key,this.key); },
+  clearConfig(){ this.setConfig("",""); localStorage.removeItem(LSK.url); localStorage.removeItem(LSK.key); },
+  saveSession(s){ this.session=s; if(s) localStorage.setItem(LSK.session,JSON.stringify(s)); else localStorage.removeItem(LSK.session); },
+  storeAuth(d){ const expires_at=d.expires_at||(d.expires_in?Math.floor(Date.now()/1000)+d.expires_in:null); this.saveSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_at,user:d.user}); },
+  headers(json){ const h={apikey:this.key}; if(json!==false)h["Content-Type"]="application/json"; if(this.session&&this.session.access_token)h["Authorization"]="Bearer "+this.session.access_token; return h; },
+  async ensureFresh(){ if(!this.session)return; const e=this.session.expires_at; if(e&&(e*1000-Date.now()<60000))await this.refresh(); },
+  async refresh(){ if(!this.session||!this.session.refresh_token){this.saveSession(null);return;} try{ const r=await fetch(`${this.url}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{apikey:this.key,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:this.session.refresh_token})}); if(!r.ok){this.saveSession(null);return;} this.storeAuth(await r.json()); }catch(e){ this.saveSession(null); } },
+  async signUp(email,password){ const r=await fetch(`${this.url}/auth/v1/signup`,{method:"POST",headers:{apikey:this.key,"Content-Type":"application/json"},body:JSON.stringify({email,password})}); const d=await r.json().catch(()=>({})); if(!r.ok)throw new Error(d.msg||d.error_description||d.error||("Sign up failed ("+r.status+")")); if(d.access_token){this.storeAuth(d);return{session:true};} return {session:false}; },
+  async signIn(email,password){ const r=await fetch(`${this.url}/auth/v1/token?grant_type=password`,{method:"POST",headers:{apikey:this.key,"Content-Type":"application/json"},body:JSON.stringify({email,password})}); const d=await r.json().catch(()=>({})); if(!r.ok)throw new Error(d.msg||d.error_description||d.error||("Sign in failed ("+r.status+")")); this.storeAuth(d); },
+  async signOut(){ try{ await fetch(`${this.url}/auth/v1/logout`,{method:"POST",headers:this.headers()}); }catch(e){} this.saveSession(null); },
+  async rest(path,opts={}){ await this.ensureFresh(); const go=()=>fetch(`${this.url}/rest/v1/${path}`,{...opts,headers:{...this.headers(),...(opts.headers||{})}}); let r=await go(); if(r.status===401){ await this.refresh(); r=await go(); } return this.handle(r); },
+  async handle(r){ const t=await r.text(); let d=null; try{ d=t?JSON.parse(t):null; }catch(e){ d=t; } if(!r.ok)throw new Error((d&&(d.message||d.msg||d.error))||("Request failed ("+r.status+")")); return d; },
+  select(table,q){ return this.rest(`${table}?${q||"select=*"}`,{method:"GET"}); },
+  insert(table,row){ return this.rest(table,{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(row)}); },
+  update(table,id,patch){ return this.rest(`${table}?id=eq.${id}`,{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(patch)}); },
+  remove(table,id){ return this.rest(`${table}?id=eq.${id}`,{method:"DELETE"}); },
+  async upload(bucket,path,file){ await this.ensureFresh(); const r=await fetch(`${this.url}/storage/v1/object/${bucket}/${encodeURI(path)}`,{method:"POST",headers:{apikey:this.key,Authorization:"Bearer "+this.session.access_token,"x-upsert":"true","Content-Type":file.type||"application/octet-stream"},body:file}); if(!r.ok)throw new Error("Logo upload failed: "+(await r.text())); return path; },
+  async signedUrl(bucket,path,expires){ await this.ensureFresh(); try{ const r=await fetch(`${this.url}/storage/v1/object/sign/${bucket}/${encodeURI(path)}`,{method:"POST",headers:this.headers(),body:JSON.stringify({expiresIn:expires||3600})}); if(!r.ok)return null; const d=await r.json(); return this.url+"/storage/v1"+d.signedURL; }catch(e){ return null; } },
+  async removeObject(bucket,path){ try{ await this.ensureFresh(); await fetch(`${this.url}/storage/v1/object/${bucket}/${encodeURI(path)}`,{method:"DELETE",headers:this.headers()}); }catch(e){} },
+};
+const LOGO_BUCKET="company-logos";
+const SOURCE_BUCKET="source-documents";
+
+/* ---------------- row <-> app-object mapping ---------------- */
+function coFromRow(r){ return { id:r.id, name:r.name||"", address:r.address||"", city:r.city||"", country:r.country||"", taxId:r.tax_number||"", registration:r.registration_number||"", phone:r.phone||"", email:r.email||"", website:r.website||"", currency:r.default_currency||"USD", notes:r.notes||"", bank:{ name:r.bank_name||"", address:r.bank_address||"", holder:r.account_holder||"", iban:r.iban||"", account:r.account_number||"", swift:r.swift_bic||"" }, logoPath:r.logo_path||null, logoKey:r.logo_path||null }; }
+function coToRow(c){ return { name:(c.name||"").trim(), address:c.address||null, city:c.city||null, country:c.country||null, tax_number:c.taxId||null, registration_number:c.registration||null, phone:c.phone||null, email:c.email||null, website:c.website||null, default_currency:c.currency||"USD", notes:c.notes||null, bank_name:(c.bank&&c.bank.name)||null, bank_address:(c.bank&&c.bank.address)||null, account_holder:(c.bank&&c.bank.holder)||null, iban:(c.bank&&c.bank.iban)||null, account_number:(c.bank&&c.bank.account)||null, swift_bic:(c.bank&&c.bank.swift)||null, logo_path:c.logoPath||null }; }
+function snapCompany(c){ return c?{ id:c.id, name:c.name, address:c.address, city:c.city, country:c.country, taxId:c.taxId, email:c.email, phone:c.phone, website:c.website, bank:c.bank, logoPath:c.logoPath }:null; }
+function docFromRow(r){ return { id:r.id, number:r.number||"", numberMode:r.number_mode||"auto", date:r.doc_date, currency:r.currency||"USD", sellerId:r.seller_id, buyerId:r.buyer_id, seller:r.seller_snapshot||null, buyer:r.buyer_snapshot||null, items:(r.items||[]).map(it=>({id:it.id||uid("li"),description:it.description||"",quantity:isFinite(it.quantity)?it.quantity:0,unit:it.unit||"",unitPrice:isFinite(it.unitPrice)?it.unitPrice:0})), shippingRoute:r.shipping_route||"", paymentTerms:r.payment_terms||"", notes:r.notes||"", logoMode:r.logo_mode||"auto", logoSize:r.logo_size||"medium", customLogoKey:r.custom_logo_path||null, status:r.status||"draft", subtotal:r.subtotal||0, total:r.total||0, revision:r.revision||1, revisionOf:r.revision_of||null, finalizedAt:r.finalized_at||null, source: r.source_file_path?{ path:r.source_file_path, name:r.source_file_name||"document", type:r.source_file_type||"pdf", extraction:r.source_extraction||{}, url:null, textPreview:null }:null }; }
+// Legacy docs saved with status 'generated' are treated as finalized.
+function isFinalized(d){ return d && (d.status==="finalized"||d.status==="generated"); }
+
+/* ---------------- data layer ---------------- */
+async function bootData(){
+  await loadSettings();
+  const rows=await SB.select("companies","select=*&order=created_at.desc");
+  companies=rows.map(coFromRow);
+  await Promise.all(companies.filter(c=>c.logoPath).map(c=>ensureLogo(c.logoPath)));
+  const docs=await SB.select("documents","select=*&order=created_at.desc");
+  invoices=docs.map(docFromRow);
+}
+async function ensureLogo(path){ if(!path)return null; if(files[path]&&files[path].dataUrl)return files[path]; const url=await SB.signedUrl(LOGO_BUCKET,path); if(!url)return null; const name=path.split("/").pop().replace(/^[a-z0-9]{1,10}-/i,""); const mime=/\.svg$/i.test(name)?"image/svg+xml":/\.png$/i.test(name)?"image/png":/\.webp$/i.test(name)?"image/webp":"image/jpeg"; files[path]={key:path,name,mimeType:mime,dataUrl:url,width:0,height:0}; await measureInto(files[path]); return files[path]; }
+function measureInto(f){ return new Promise(res=>{ if(f.mimeType.includes("svg")){ fetch(f.dataUrl).then(r=>r.text()).then(t=>{ const m=t.match(/viewBox\s*=\s*["'][\d.]+ [\d.]+ ([\d.]+) ([\d.]+)/); if(m){f.width=parseFloat(m[1]);f.height=parseFloat(m[2]);} res(); }).catch(()=>res()); return; } const img=new Image(); img.onload=()=>{ f.width=img.naturalWidth||0; f.height=img.naturalHeight||0; res(); }; img.onerror=()=>res(); img.src=f.dataUrl; }); }
+function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result)); fr.onerror=rej; fr.readAsDataURL(file); }); }
+function measureFile(file,dataUrl){ return new Promise(res=>{ if((file.type||"").includes("svg")){ const m=dataUrl.match(/viewBox\s*=\s*["'][\d.]+ [\d.]+ ([\d.]+) ([\d.]+)/); if(m){res({w:parseFloat(m[1]),h:parseFloat(m[2])});return;} } const img=new Image(); img.onload=()=>res({w:img.naturalWidth||0,h:img.naturalHeight||0}); img.onerror=()=>res({w:0,h:0}); img.src=dataUrl; }); }
+async function uploadLogo(file){ const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"); const path=`${SB.uid}/${Math.random().toString(36).slice(2,10)}-${safe}`; await SB.upload(LOGO_BUCKET,path,file); const dataUrl=await fileToDataUrl(file); const dims=await measureFile(file,dataUrl); files[path]={key:path,name:file.name,mimeType:file.type||"image/png",dataUrl,width:dims.w,height:dims.h}; return path; }
+
+/* ---------------- settings + invoice numbering (generator-controlled) ---------------- */
+function defaultSettings(){ return { numbering:{ pattern:"DM-{YYYY}-{SEQ:4}", nextSeq:1 } }; }
+let settings = defaultSettings();
+function mergeSettings(d){ const s=defaultSettings(); if(d&&d.numbering){ s.numbering.pattern=typeof d.numbering.pattern==="string"?d.numbering.pattern:s.numbering.pattern; s.numbering.nextSeq=Number.isFinite(d.numbering.nextSeq)?d.numbering.nextSeq:s.numbering.nextSeq; } return s; }
+async function loadSettings(){ try{ const rows=await SB.select("app_settings","select=data"); settings = (rows&&rows.length&&rows[0].data)?mergeSettings(rows[0].data):defaultSettings(); }catch(e){ settings=defaultSettings(); } }
+async function saveSettings(){ const row={ user_id:SB.uid, data:settings, updated_at:new Date().toISOString() }; await SB.rest("app_settings?on_conflict=user_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},body:JSON.stringify(row)}); }
+// Turn a pattern + sequence + date into an invoice number. Tokens: {YYYY}{YY}{MM}{DD}{SEQ} / {SEQ:n}
+function formatInvoiceNumber(pattern,seq,dateStr){
+  const d=dateStr?new Date(dateStr):new Date(); const dd=isNaN(d)?new Date():d;
+  const YYYY=String(dd.getFullYear()), YY=YYYY.slice(-2), MM=String(dd.getMonth()+1).padStart(2,"0"), DD=String(dd.getDate()).padStart(2,"0");
+  return String(pattern||"").replace(/\{(YYYY|YY|MM|DD|SEQ)(?::(\d+))?\}/g,(m,tok,pad)=>{
+    if(tok==="YYYY")return YYYY; if(tok==="YY")return YY; if(tok==="MM")return MM; if(tok==="DD")return DD;
+    const s=String(Math.max(0,Math.floor(seq))); return pad?s.padStart(parseInt(pad,10),"0"):s;
+  });
+}
+function projectedNumber(dateStr){ return formatInvoiceNumber(settings.numbering.pattern, settings.numbering.nextSeq, dateStr); }
+// Allocate the next auto number and persist the incremented counter (the generator owns this).
+async function allocateNumber(dateStr){ const n=projectedNumber(dateStr); settings.numbering.nextSeq=(settings.numbering.nextSeq||1)+1; try{ await saveSettings(); }catch(e){ /* number still returned; counter re-syncs on next save */ } return n; }
+
+/* ---------------- icons ---------------- */
+const IC = {
+  dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  newdoc:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 8v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="M12 11v5M9.5 13.5h5"/>',
+  editdoc:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 10V8l-5-5H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"/><path d="M18.5 14.5l2 2L16 21h-2v-2z"/>',
+  co:'<path d="M3 21h18"/><path d="M5 21V6a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15"/><path d="M14 21V10h4a1 1 0 0 1 1 1v10"/><path d="M8 9h3M8 13h3M8 17h3"/>',
+  tpl:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/>',
+  docs:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 8v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6z"/><path d="M9 13h6M9 17h6M9 9h1"/>',
+  set:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',check:'<path d="M20 6 9 17l-5-5"/>',trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>',
+  print:'<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7h-5M21 7v5"/>',
+};
+const svg = k => `<svg viewBox="0 0 24 24">${IC[k]}</svg>`;
+
+const NAV = [
+  ["Workspace",[["Dashboard","dashboard","dash"],["New Document","new","newdoc"],["Edit Document","edit","editdoc"]]],
+  ["Library",[["Companies","companies","co"],["Templates","templates","tpl"],["Documents","documents","docs"]]],
+  ["System",[["Settings","settings","set"]]],
+];
+
+/* ---------------- state ---------------- */
+let route = "dashboard";
+let modal = null;      // {editing}
+let draft = null;      // new-invoice form
+let genMsg = null;
+let editDraft = null;  // company form
+let appState = "ready"; // ready | loading
+let busy = false;       // async guard for save/generate
+const auth = {mode:"signin", email:"", password:"", error:"", notice:"", busy:false};
+const connect = {url:SB.url, key:SB.key, error:""};
+const ai = {open:true, instruction:"", busy:false, error:"", proposal:null};
+let uploading=false, uploadMsg="", srcOpen=true, extOpen=false;
+
+function toast(msg,isErr){ let host=document.getElementById("toast"); if(!host){host=document.createElement("div");host.id="toast";document.body.appendChild(host);} const el=document.createElement("div"); el.className="toast"+(isErr?" err":""); el.textContent=msg; host.appendChild(el); setTimeout(()=>{el.style.opacity="0";el.style.transition="opacity .3s";setTimeout(()=>el.remove(),300);}, isErr?5200:3200); }
+
+function newLine(){return {id:uid("li"),description:"",quantity:1,unit:"",unitPrice:0};}
+function freshDraft(){
+  const date=new Date().toISOString().slice(0,10);
+  return {id:null,status:"draft",revision:1,revisionOf:null,finalizedAt:null,numberMode:"auto",sellerId:null,buyerId:null,number:projectedNumber(date),date,currency:"USD",items:[newLine()],shippingRoute:"",paymentTerms:"",notes:"",logoMode:"auto",logoSize:"medium",customLogoKey:null,source:null};
+}
+
+/* ---------------- render ---------------- */
+function renderNav(){
+  document.getElementById("nav").innerHTML = NAV.map(([sec,items])=>`
+    <div class="nav-group"><div class="nav-label">${sec}</div>
+    ${items.map(([label,r,ic])=>`<div class="nav-item ${route===r?'active':''}" data-route="${r}">${svg(ic)}${label}</div>`).join("")}
+    </div>`).join("");
+}
+
+function topbar(title,sub,crumb,action){
+  return `<header class="topbar"><div class="topbar-inner">
+    <div><div class="crumb">${crumb.map((c,i)=>(i?'<span class="sep">/</span>':'')+`<span>${c}</span>`).join("")}</div>
+    <h1 class="page">${title}</h1><p class="subtitle">${sub}</p></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="search"><svg viewBox="0 0 24 24">${IC.search}</svg><input placeholder="Search documents…"></div>
+      ${action||`<button class="btn btn-primary" data-route="new"><svg viewBox="0 0 24 24">${IC.plus}</svg>New Invoice</button>`}
+    </div></div></header>`;
+}
+
+function statusChip(s){ if(s==="finalized"||s==="generated")return '<span class="chip chip-emerald">Finalized</span>'; return '<span class="chip chip-amber">Draft</span>'; }
+
+/* ---- Dashboard ---- */
+function viewDashboard(){
+  const gen = invoices.filter(i=>i.status==="generated");
+  const now=new Date();
+  const byCur={};
+  gen.filter(i=>{const d=new Date(i.date);return d.getUTCFullYear()===now.getUTCFullYear()&&d.getUTCMonth()===now.getUTCMonth();}).forEach(i=>{byCur[i.currency]=(byCur[i.currency]||0)+sub(i.items);});
+  const pc=Object.keys(byCur).sort((a,b)=>byCur[b]-byCur[a])[0]||"USD";
+  const recent=invoices.slice(0,5);
+  const stat=(l,v,h,ic)=>`<div class="card stat"><div class="top"><div class="label">${l}</div><div class="ic">${svg(ic)}</div></div><div class="val">${v}</div><div class="hint">${h}</div></div>`;
+  return topbar("Dashboard","Overview of your commercial documents and companies.",["Workspace","Dashboard"])+
+  `<div class="container">
+    <div class="grid cols-4">
+      ${stat("Total documents",invoices.length,gen.length+" generated","docs")}
+      ${stat("Companies",companies.length,"Sellers &amp; buyers","co")}
+      ${stat("Invoiced this month",money(byCur[pc]||0,pc),pc+" · current month","trend")}
+      ${stat("Drafts",invoices.filter(i=>i.status==="draft").length,"Awaiting generation","newdoc")}
+    </div>
+    <div class="grid" style="grid-template-columns:2fr 1fr;margin-top:24px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid rgba(212,217,226,.7)">
+          <div><h2 style="margin:0;font-size:14px;font-weight:600">Recent documents</h2><p style="margin:0;font-size:12px;color:var(--ink-400)">Your latest invoices across all companies.</p></div>
+          <button class="btn btn-ghost" data-route="documents" style="color:var(--brand);font-size:12px">View all ${svg('arrow')}</button>
+        </div>
+        <table><thead><tr><th>Invoice</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th class="num">Status</th></tr></thead>
+        <tbody>${recent.map(i=>`<tr><td style="font-weight:500;color:var(--ink-900)">${esc(i.number)}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(sub(i.items),i.currency)}</td><td class="num">${statusChip(i.status)}</td></tr>`).join("")}</tbody></table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="overflow:hidden"><div class="hero"><h2>Create a document</h2><p>Generate a commercial invoice from your saved companies in a few clicks.</p>
+          <button class="btn mt4" data-route="new" style="background:#fff;color:var(--brand-700)">${svg('newdoc')}New invoice</button></div></div>
+        <div class="card" style="padding:20px"><h2 style="margin:0;font-size:14px;font-weight:600">Manage companies</h2><p style="margin:4px 0 0;font-size:12px;color:var(--ink-500)">Keep seller and buyer details ready to drop into any document.</p>
+          <button class="btn btn-secondary mt4" data-route="companies" style="width:100%">${svg('co')}Open companies</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---- Companies ---- */
+function viewCompanies(){
+  const action=`<button class="btn btn-primary" data-act="co-new">${svg('plus')}Add company</button>`;
+  let body;
+  if(!companies.length){
+    body=`<div class="card empty-state"><div class="ic">${svg('co')}</div><h3 style="margin:16px 0 0;font-size:14px">No companies yet</h3><p style="color:var(--ink-500);max-width:360px">Add your sellers and buyers so you can drop them straight into an invoice.</p><button class="btn btn-primary mt4" data-act="co-new">${svg('plus')}Add company</button></div>`;
+  }else{
+    body=`<div class="grid cols-3">${companies.map(c=>`<div class="card co-card">
+      ${c.logoKey&&files[c.logoKey]?`<div style="height:40px;display:flex;align-items:center"><img src="${files[c.logoKey].dataUrl}" alt="logo" style="max-height:40px;max-width:150px;object-fit:contain"></div>`:`<div class="co-logo">${esc(c.name.slice(0,2).toUpperCase())}</div>`}
+      <div class="co-name">${esc(c.name)}</div><div class="co-country">${esc(c.country||"—")}</div>
+      <div class="co-dl">
+        ${c.taxId?`<div class="r"><span class="k">Tax ID</span><span>${esc(c.taxId)}</span></div>`:""}
+        ${c.email?`<div class="r"><span class="k">Email</span><span>${esc(c.email)}</span></div>`:""}
+        ${c.address?`<div class="r"><span class="k">Address</span><span>${esc(c.address)}</span></div>`:""}
+      </div>
+      <div class="co-actions"><button class="btn btn-secondary" style="flex:1;padding:6px" data-act="co-edit" data-id="${c.id}">Edit</button>
+      <button class="btn btn-ghost" style="padding:6px 8px" data-act="co-del" data-id="${c.id}">${svg('trash')}</button></div>
+    </div>`).join("")}</div>`;
+  }
+  return topbar("Companies","Sellers and buyers available across all your documents.",["Library","Companies"],action)+`<div class="container">${body}</div>`;
+}
+
+/* ---- A4 sheet ---- */
+function partyBlock(role,c){
+  if(!c)return `<div class="party"><div class="role">${role}</div><div class="empty">Not selected</div></div>`;
+  return `<div class="party"><div class="role">${role}</div>
+    <div class="cn">${esc(c.name)}</div>
+    <div class="ln">${esc(c.address)}</div>
+    ${c.taxId?`<div class="ln">Tax / VAT: ${esc(c.taxId)}</div>`:""}
+    ${c.email?`<div class="ln">${esc(c.email)}</div>`:""}
+    ${c.phone?`<div class="ln">${esc(c.phone)}</div>`:""}</div>`;
+}
+function bankBlock(seller){
+  const b=seller&&seller.bank; if(!b||!(b.name||b.iban||b.account||b.swift||b.holder))return "";
+  const rows=[["Bank",b.name],["Account holder",b.holder],["Bank address",b.address],["IBAN",b.iban],["Account no.",b.account],["SWIFT / BIC",b.swift]].filter(r=>r[1]);
+  return `<div style="border-top:1px solid var(--ink-200);padding-top:16px;margin-top:24px">
+    <div class="k" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-500);margin-bottom:6px">Bank details</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 32px">${rows.map(r=>`<div class="bank-line"><b>${esc(r[0])}:</b> ${esc(r[1])}</div>`).join("")}</div></div>`;
+}
+function letterhead(inv,seller){
+  const logo=resolveLogo(inv);
+  if(logo){ const d=fitLogo(logo.width,logo.height,LOGO_CAPS[inv.logoSize||"medium"]); return `<img src="${logo.dataUrl}" alt="logo" style="width:${d.w}px;height:${d.h}px;object-fit:contain;max-width:${LOGO_CAPS[inv.logoSize||"medium"].w}px;max-height:${LOGO_CAPS[inv.logoSize||"medium"].h}px">`; }
+  if(seller){ return `<div><div style="font-size:16px;font-weight:800;letter-spacing:-.01em;color:var(--ink-900)">${esc(seller.name)}</div>${seller.country?`<div style="font-size:11px;color:var(--ink-500)">${esc(seller.country)}</div>`:""}</div>`; }
+  return `<div class="mk"><span class="m"><svg viewBox="0 0 24 24" width="26" height="26" fill="none"><circle cx="9.5" cy="12" r="1.4" fill="#fff"/><circle cx="14.5" cy="12" r="1.4" fill="#fff"/><path d="M6 10.5C6 8.6 7.6 7 9.5 7h5C16.4 7 18 8.6 18 10.5V17l-1.6-1.1a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0l-.8-.6a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0L8.4 15.9a1 1 0 0 0-1.2 0L6 17z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span><div><div class="nm">DrMonster <span>AI</span></div><div class="studio">Commercial Document Studio</div></div></div>`;
+}
+function a4(inv,seller,buyer){
+  const items=inv.items.length?inv.items:[{description:"",quantity:0,unit:"",unitPrice:0}];
+  const t=computeTotals(inv.items,inv.currency);
+  const revBadge=inv.revision>1?`<div class="meta" style="color:var(--amber-700)">Revision ${inv.revision}</div>`:"";
+  return `<div class="a4">
+    <div class="hd">
+      <div style="min-height:44px;display:flex;align-items:center">${letterhead(inv,seller)}</div>
+      <div><div class="title">Commercial Invoice</div><div class="meta"><b>${esc(inv.number||"—")}</b></div><div class="meta">Date: ${fdate(inv.date)}</div>${revBadge}</div>
+    </div>
+    <div class="parties">${partyBlock("Seller / Exporter",seller)}${partyBlock("Buyer / Consignee",buyer)}</div>
+    <table class="items"><thead><tr><th>Description</th><th class="num">Qty</th><th>Unit</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+    <tbody>${items.map(it=>`<tr><td>${it.description?esc(it.description):'<span style="font-style:italic;color:var(--ink-400)">Product description</span>'}</td><td class="num">${esc(String(it.quantity||0))}</td><td>${it.unit?esc(it.unit):'<span style="color:var(--ink-300)">—</span>'}</td><td class="num">${money(it.unitPrice||0,inv.currency)}</td><td class="num" style="font-weight:500;color:var(--ink-900)">${money(lineTotal(it,inv.currency),inv.currency)}</td></tr>`).join("")}</tbody></table>
+    <div class="totbox"><div class="w"><div class="row"><span>Subtotal</span><span>${money(t.subtotal,inv.currency)}</span></div>
+      <div class="grand"><span class="k">Total (${inv.currency})</span><span class="v">${money(t.total,inv.currency)}</span></div></div></div>
+    <div class="terms"><div><div class="k">Shipping route</div><div class="v">${inv.shippingRoute?esc(inv.shippingRoute):'<span style="font-style:italic;color:var(--ink-400)">—</span>'}</div></div>
+      <div><div class="k">Payment terms</div><div class="v">${inv.paymentTerms?esc(inv.paymentTerms):'<span style="font-style:italic;color:var(--ink-400)">—</span>'}</div></div></div>
+    ${inv.notes?`<div style="margin-top:20px;font-size:12px"><div class="k" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-500);margin-bottom:4px">Notes</div><div style="color:var(--ink-700)">${esc(inv.notes)}</div></div>`:""}
+    ${bankBlock(seller)}
+    <div class="foot"><div class="note">This is a computer-generated commercial invoice issued via DrMonster AI.</div>
+      <div class="sig"><div class="ln"></div><div class="cap">Authorized signature</div></div></div>
+  </div>`;
+}
+
+/* ---- New Invoice ---- */
+function viewNew(){
+  if(!draft)draft=freshDraft();
+  const seller=companies.find(c=>c.id===draft.sellerId)||(draft.seller||null);
+  const buyer=companies.find(c=>c.id===draft.buyerId)||(draft.buyer||null);
+  const finalized=isFinalized(draft);
+  const coOpts=(sel)=>companies.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.name)}${c.country?' · '+esc(c.country):''}</option>`).join("");
+  const sh=(idx,t,d)=>`<div class="sec-head"><span class="sec-idx">${idx}</span><div><h3>${t}</h3><p>${d}</p></div></div>`;
+  const t=computeTotals(draft.items,draft.currency);
+
+  /* ---- finalized: locked, revision-only ---- */
+  if(finalized){
+    const action=`<div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" data-act="export-pdf">${svg('print')}Export PDF</button>
+      <button class="btn btn-secondary" data-act="export-docx">Export DOCX</button>
+      <button class="btn btn-primary" data-act="create-revision">${svg('editdoc')}Create revision</button></div>`;
+    return topbar("Invoice "+esc(draft.number),"Finalized "+(draft.revision>1?("· revision "+draft.revision+" "):"")+"· locked from silent edits.",["Library","Documents","Invoice"],action)+
+    `<div class="container">
+      <div class="lockbar" style="margin-bottom:20px"><div class="msg">🔒 This invoice is finalized. It is never modified silently — to change anything, create a revision, which is saved as a new linked document.</div>
+        <button class="btn btn-primary" data-act="create-revision" style="white-space:nowrap">Create revision</button></div>
+      <div class="card" style="padding:24px;display:flex;justify-content:center;overflow:auto"><div class="a4-scale">${a4(draft,seller,buyer)}</div></div>
+    </div>`;
+  }
+
+  /* ---- editable draft ---- */
+  if(draft.numberMode==="auto"){ draft.number=projectedNumber(draft.date); }
+  const numAuto=draft.numberMode==="auto";
+  const canFinalize=!!(draft.date && draft.items.some(i=>i.description.trim()));
+  const editing=!!draft.id;
+  const action=`<div style="display:flex;gap:8px">
+    <button class="btn btn-secondary" data-act="preview-export">${svg('print')}Preview &amp; export</button>
+    <button class="btn btn-secondary" data-act="save-draft" ${busy?'disabled':''}>Save draft</button>
+    <button class="btn btn-primary" data-act="save-finalize" ${canFinalize&&!busy?'':'disabled'}>${svg('check')}Save &amp; finalize</button></div>`;
+  const revBanner=draft.revision>1?`<div class="lockbar" style="margin:0 0 4px"><div class="msg">✏️ Revision ${draft.revision} — a new document linked to the original. Finalizing saves it separately; the original stays intact.</div></div>`:"";
+  const editTitle=draft.source?(draft.revision>1?("Revision "+draft.revision):"Revise document"):(editing?(draft.revision>1?("Revision "+draft.revision):"Edit draft"):"New Invoice");
+  return topbar(editTitle,draft.source?"Reviewing an uploaded document — original preserved, revised copy generated in DrMonster format.":"Fill in the details on the left — the A4 document updates live. The generator controls all numbers, dates and totals.",["Workspace","New Document","Invoice"],action)+
+  `<div class="split">
+    <div class="form-col"><div class="form-inner">
+      ${revBanner}
+      <div class="ai-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="ai-badge">AI</span><div><div style="font-weight:600;font-size:14px">Assistant</div><div style="font-size:12px;color:var(--ink-500)">Describe the invoice or a change in plain language.</div></div></div>
+          <button type="button" class="btn btn-ghost" style="padding:4px 10px;font-size:12px" data-act="ai-toggle">${ai.open?"Hide":"Show"}</button>
+        </div>
+        ${ai.open?`<div style="margin-top:12px">
+          <textarea class="inp" rows="3" data-aifield="instruction" placeholder="e.g. Make an invoice from Thai Textile to Karoglu for 20 automatic yarn winding machines at $2,500 each, shipping from Thailand to Istanbul.">${esc(ai.instruction)}</textarea>
+          ${ai.error?`<div class="auth-err" style="margin:10px 0 0">${esc(ai.error)}</div>`:""}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px">
+            <div style="font-size:11px;color:var(--ink-400);flex:1">Claude proposes fields; you review before applying. It never sets bank details, tax numbers, invoice numbers or totals.</div>
+            <button class="btn btn-primary" style="white-space:nowrap" data-act="ai-ask" ${ai.busy?'disabled':''}>${ai.busy?"Asking Claude…":"Ask Claude"}</button>
+          </div>
+        </div>`:""}
+      </div>
+      ${sourcePanel()}
+      <section>${sh("01","Parties","Choose the seller and buyer for this invoice.")}
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><label class="lbl">Seller</label><select class="inp" data-field="sellerId"><option value="">Select seller company</option>${coOpts(draft.sellerId)}</select></div>
+          <div><label class="lbl">Buyer</label><select class="inp" data-field="buyerId"><option value="">Select buyer company</option>${coOpts(draft.buyerId)}</select></div>
+        </div></section>
+      <section>${sh("02","Invoice details","Number, date and currency — all generator-controlled.")}
+        <div><label class="lbl">Invoice number</label>
+          <div style="display:flex;gap:8px">
+            <input class="inp" data-field="number" value="${esc(draft.number)}" ${numAuto?'readonly':''} style="${numAuto?'background:var(--ink-50);color:var(--ink-500)':''}">
+            <button type="button" class="seg ${numAuto?'seg-on':''}" data-act="num-mode" data-v="auto" style="padding:8px 14px">Auto</button>
+            <button type="button" class="seg ${!numAuto?'seg-on':''}" data-act="num-mode" data-v="manual" style="padding:8px 14px">Manual</button>
+          </div>
+          <div style="font-size:12px;color:var(--ink-400);margin-top:6px">${numAuto?`Auto — pattern <b>${esc(settings.numbering.pattern)}</b>. The committed number is assigned when you finalize. Change the format in Settings.`:"Manual — enter any reference number for this invoice."}</div>
+        </div>
+        <div class="row-2 mt4"><div><label class="lbl">Invoice date</label><input class="inp" type="date" data-field="date" value="${esc(draft.date)}"></div>
+        <div><label class="lbl">Currency</label><select class="inp" data-field="currency">${CUR_LIST.map(([c,l])=>`<option value="${c}" ${draft.currency===c?'selected':''}>${c} — ${l}</option>`).join("")}</select></div></div>
+      </section>
+      <section>${sh("03","Products","Line total = quantity × unit price. Subtotal and total are computed automatically.")}
+        <datalist id="units">${["pcs","set","box","kg","g","ton","m","m²","m³","L","hrs","day","service"].map(u=>`<option value="${u}">`).join("")}</datalist>
+        <div style="display:flex;flex-direction:column;gap:12px">
+        ${draft.items.map((it,idx)=>`<div class="item-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-400)">Item ${idx+1}</span>
+          ${draft.items.length>1?`<button class="btn btn-ghost" style="padding:2px" data-act="rm-item" data-id="${it.id}">${svg('trash')}</button>`:""}</div>
+          <label class="lbl">Product description</label><textarea class="inp" rows="2" data-item="${it.id}" data-k="description" placeholder="e.g. CNC precision spindle assembly, model AX-220">${esc(it.description)}</textarea>
+          <div class="row-4 mt4">
+            <div><label class="lbl">Quantity</label><input class="inp" type="number" min="0" step="any" data-item="${it.id}" data-k="quantity" value="${it.quantity}"></div>
+            <div><label class="lbl">Unit</label><input class="inp" list="units" data-item="${it.id}" data-k="unit" value="${esc(it.unit||"")}" placeholder="pcs"></div>
+            <div><label class="lbl">Unit price</label><input class="inp" type="number" min="0" step="any" data-item="${it.id}" data-k="unitPrice" value="${it.unitPrice}"></div>
+            <div><label class="lbl">Line total</label><div class="amount-box">${money(lineTotal(it,draft.currency),draft.currency)}</div></div>
+          </div></div>`).join("")}
+        <button class="btn btn-secondary dashed" style="width:100%" data-act="add-item">${svg('plus')}Add product</button>
+        </div>
+        <div class="mt4" style="display:flex;justify-content:space-between;padding:6px 4px;font-size:13px;color:var(--ink-600)"><span>Subtotal</span><span class="js-subtotal" style="font-variant-numeric:tabular-nums">${money(t.subtotal,draft.currency)}</span></div>
+        <div class="total-strip"><span class="k">Total (${draft.currency})</span><span class="v">${money(t.total,draft.currency)}</span></div>
+      </section>
+      <section>${sh("04","Shipping & terms","Route and payment conditions.")}
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><label class="lbl">Shipping route</label><input class="inp" data-field="shippingRoute" value="${esc(draft.shippingRoute)}" placeholder="Ankara (TR) → Jebel Ali Port (AE), CIF"></div>
+          <div><label class="lbl">Payment terms</label><input class="inp" data-field="paymentTerms" value="${esc(draft.paymentTerms)}" placeholder="30% advance, 70% against B/L copy"></div>
+          <div><label class="lbl">Notes (optional)</label><textarea class="inp" rows="2" data-field="notes" placeholder="Any additional remarks shown on the document.">${esc(draft.notes)}</textarea></div>
+        </div></section>
+      <section>${sh("05","Branding","Logo shown top-left on the document, in the preview and exports.")}
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div>
+            <label class="lbl">Logo source</label>
+            <div class="row-3">${[["auto","Seller logo"],["custom","Custom"],["hidden","Hidden"]].map(([v,l])=>`<button type="button" class="seg ${draft.logoMode===v?'seg-on':''}" data-act="lmode" data-v="${v}">${l}</button>`).join("")}</div>
+            ${draft.logoMode==="auto"?`<div style="font-size:12px;color:var(--ink-400);margin-top:6px">${(()=>{const s=companies.find(c=>c.id===draft.sellerId);return !s?"Select a seller to use its saved logo.":(s.logoKey?"Using "+esc(s.name)+"'s saved logo.":esc(s.name)+" has no saved logo — add one on Companies, or choose “Custom”.");})()}</div>`:""}
+            ${draft.logoMode==="hidden"?`<div style="font-size:12px;color:var(--ink-400);margin-top:6px">No logo will be shown on this invoice.</div>`:""}
+          </div>
+          ${draft.logoMode==="custom"?`<div>
+            <label class="lbl">Invoice logo</label>
+            ${draft.customLogoKey&&files[draft.customLogoKey]
+              ? `<div style="display:flex;gap:12px;align-items:center;border:1px solid var(--ink-200);border-radius:12px;padding:10px"><div class="logo-preview-box" style="height:48px;width:88px"><img src="${files[draft.customLogoKey].dataUrl}"></div><div style="flex:1;min-width:0"><div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(files[draft.customLogoKey].name)}</div><div style="margin-top:6px;display:flex;gap:8px"><button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" data-act="inv-logo-pick">Replace</button><button type="button" class="btn btn-ghost" style="padding:4px 8px;font-size:12px" data-act="inv-logo-remove">Remove</button></div></div></div>`
+              : `<button type="button" class="btn btn-secondary dashed" style="width:100%;padding:14px" data-act="inv-logo-pick">+ Upload a logo for this invoice</button>`}
+            <div style="font-size:12px;color:var(--ink-400);margin-top:6px">Used only for this invoice — the company's saved logo is unchanged.</div>
+            <input type="file" accept="${ALLOWED_LOGO}" id="inv-logo-input" style="display:none">
+          </div>`:""}
+          <div style="${resolveLogo(draft)?'':'opacity:.5'}">
+            <label class="lbl">Logo size</label>
+            <div class="row-3">${[["small","Small"],["medium","Medium"],["large","Large"]].map(([v,l])=>`<button type="button" class="seg ${draft.logoSize===v?'seg-on':''}" data-act="lsize" data-v="${v}" ${resolveLogo(draft)?'':'disabled'}>${l}</button>`).join("")}</div>
+          </div>
+        </div>
+      </section>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1" data-act="save-draft" ${busy?'disabled':''}>Save draft</button>
+        <button class="btn btn-primary" style="flex:1.4" data-act="save-finalize" ${canFinalize&&!busy?'':'disabled'}>${svg('check')}Save &amp; finalize</button>
+      </div>
+      <button class="btn btn-secondary dashed" style="width:100%;margin-top:8px" data-act="preview-export">${svg('print')}Preview &amp; export (PDF / DOCX)</button>
+    </div></div>
+    <div class="preview-col"><div class="preview-bar"><span class="lp">Live preview · A4</span><span class="chip chip-white">${draft.currency}</span></div>
+      <div class="preview-canvas"><div class="a4-scale">${a4(draft,seller,buyer)}</div></div></div>
+  </div>`;
+}
+
+/* ---- Documents ---- */
+function viewDocuments(){
+  const action=`<button class="btn btn-primary" data-route="new">${svg('plus')}New Invoice</button>`;
+  let body;
+  if(!invoices.length){body=`<div class="card empty-state"><div class="ic">${svg('docs')}</div><h3 style="margin:16px 0 0">No documents yet</h3><p style="color:var(--ink-500)">Generate your first invoice to see it here.</p></div>`;}
+  else body=`<div class="card" style="overflow:hidden"><table><thead><tr><th>Invoice</th><th>Seller</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th class="num">Status</th><th></th></tr></thead>
+    <tbody>${invoices.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number)}${i.revision>1?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num">${statusChip(i.status)}</td><td class="num"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">${isFinalized(i)?"View":"Edit"} ${svg('arrow')}</button></td></tr>`;}).join("")}</tbody></table></div>`;
+  return topbar("Documents","Every invoice you've created in this workspace. Drafts can be edited; finalized invoices open locked.",["Library","Documents"],action)+`<div class="container">${body}</div>`;
+}
+
+/* ---- Coming soon / settings ---- */
+function viewComing(title,crumb,desc,planned){
+  return topbar(title,desc,crumb)+`<div class="container"><div class="card" style="padding:32px">
+    <span class="chip chip-brand">Coming in a later version</span>
+    <h2 style="margin:16px 0 0;font-size:18px">${title}</h2><p style="color:var(--ink-500);max-width:520px">${desc}</p>
+    <ul style="list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;gap:8px">${planned.map(p=>`<li style="display:flex;gap:10px;font-size:14px;color:var(--ink-700)"><span style="margin-top:7px;width:6px;height:6px;border-radius:999px;background:var(--brand);flex:none"></span>${p}</li>`).join("")}</ul>
+    <button class="btn btn-primary mt6" data-route="new">Create an invoice instead ${svg('arrow')}</button></div></div>`;
+}
+function viewSettings(){
+  return topbar("Settings","Workspace preferences and secure storage.",["System","Settings"])+`<div class="container"><div style="display:flex;flex-direction:column;gap:24px">
+    <div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Workspace</h2><p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">DrMonster AI — commercial invoices with live A4 preview, backed by Supabase.</p>
+      <div class="grid cols-3 mt4">
+        <div style="border:1px solid var(--ink-200);border-radius:8px;padding:16px"><div style="font-size:12px;color:var(--ink-400)">Companies</div><div style="font-size:20px;font-weight:600;margin-top:4px">${companies.length}</div></div>
+        <div style="border:1px solid var(--ink-200);border-radius:8px;padding:16px"><div style="font-size:12px;color:var(--ink-400)">Documents</div><div style="font-size:20px;font-weight:600;margin-top:4px">${invoices.length}</div></div>
+        <div style="border:1px solid var(--ink-200);border-radius:8px;padding:16px"><div style="font-size:12px;color:var(--ink-400)">Storage</div><div style="font-size:14px;font-weight:500;margin-top:8px;color:var(--emerald-700)">Supabase · secure</div></div>
+      </div></div>
+    <div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Supabase connection</h2><p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">Database, authentication and logo storage.</p>
+      <div class="co-dl mt4" style="font-size:13px">
+        <div class="r"><span class="k" style="width:96px">Project</span><span>${esc(SB.host)}</span></div>
+        <div class="r"><span class="k" style="width:96px">Signed in as</span><span>${esc(SB.email)}</span></div>
+        <div class="r"><span class="k" style="width:96px">Logo bucket</span><span>company-logos (private)</span></div>
+        <div class="r"><span class="k" style="width:96px">Anon key</span><span style="color:var(--emerald-700)">public key only · no service_role in client</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-secondary" data-act="sign-out">Sign out</button>
+        <button class="btn btn-ghost" data-act="disconnect" style="color:var(--ink-500)">Disconnect Supabase</button>
+      </div></div>
+    <div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Invoice numbering</h2><p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">The generator assigns numbers automatically using this format. You can still switch any invoice to a manual number.</p>
+      <div class="row-2 mt4">
+        <div><label class="lbl">Number pattern</label><input class="inp" data-sfield="pattern" value="${esc(settings.numbering.pattern)}" placeholder="DM-{YYYY}-{SEQ:4}"><div style="font-size:12px;color:var(--ink-400);margin-top:6px">Tokens: <b>{YYYY}</b> {YY} {MM} {DD} · <b>{SEQ}</b> or {SEQ:4} (zero-padded).</div></div>
+        <div><label class="lbl">Next sequence number</label><input class="inp" type="number" min="1" step="1" data-sfield="nextSeq" value="${esc(String(settings.numbering.nextSeq))}"><div style="font-size:12px;color:var(--ink-400);margin-top:6px">Increments each time an auto-numbered invoice is finalized.</div></div>
+      </div>
+      <div class="mt4" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--brand-50);border:1px solid var(--brand-100);border-radius:10px;padding:12px 16px">
+        <div style="font-size:13px;color:var(--ink-600)">Next invoice will be <b style="color:var(--brand-700)" id="num-preview">${esc(projectedNumber(new Date().toISOString().slice(0,10)))}</b></div>
+        <button class="btn btn-primary" data-act="save-numbering" ${busy?'disabled':''}>Save numbering</button>
+      </div></div>
+    <div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Roadmap</h2><p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">Not included yet (by design): Claude AI generation and contract drafting. The navigation and data model are already scaffolded for them.</p></div>
+  </div></div>`;
+}
+
+/* ---- company drawer ---- */
+function drawer(){
+  if(!modal)return "";
+  const d=editDraft; const b=d.bank||{};
+  return `<div class="overlay"><div class="scrim" data-act="close-modal"></div>
+    <div class="drawer"><div class="dh"><h2>${modal.editing?"Edit company":"Add company"}</h2><button class="btn btn-ghost" data-act="close-modal">Close</button></div>
+    <div class="db">
+      <div class="drawer-sub">Company details</div>
+      <div><label class="lbl">Company name *</label><input class="inp" data-mfield="name" value="${esc(d.name)}" placeholder="Acme Trading Ltd."></div>
+      <div><label class="lbl">Address</label><textarea class="inp" rows="2" data-mfield="address" placeholder="Street, building, postal code">${esc(d.address)}</textarea></div>
+      <div class="row-2"><div><label class="lbl">City</label><input class="inp" data-mfield="city" value="${esc(d.city)}" placeholder="London"></div>
+        <div><label class="lbl">Country</label><input class="inp" data-mfield="country" value="${esc(d.country)}" placeholder="United Kingdom"></div></div>
+      <div class="row-2"><div><label class="lbl">Tax number</label><input class="inp" data-mfield="taxId" value="${esc(d.taxId)}" placeholder="GB 123 456 789"></div>
+        <div><label class="lbl">Registration number</label><input class="inp" data-mfield="registration" value="${esc(d.registration)}" placeholder="Company reg. no."></div></div>
+      <div class="row-2"><div><label class="lbl">Phone</label><input class="inp" data-mfield="phone" value="${esc(d.phone)}" placeholder="+44 20 0000 0000"></div>
+        <div><label class="lbl">Email</label><input class="inp" data-mfield="email" value="${esc(d.email)}" placeholder="orders@acme.com"></div></div>
+      <div class="row-2"><div><label class="lbl">Website</label><input class="inp" data-mfield="website" value="${esc(d.website)}" placeholder="acme.com"></div>
+        <div><label class="lbl">Default currency</label><select class="inp" data-mfield="currency">${CUR_LIST.map(([c,l])=>`<option value="${c}" ${d.currency===c?'selected':''}>${c} — ${l}</option>`).join("")}</select></div></div>
+      <div><label class="lbl">Notes</label><textarea class="inp" rows="2" data-mfield="notes" placeholder="Internal notes about this company">${esc(d.notes)}</textarea></div>
+
+      <div class="drawer-sub">Bank information</div>
+      <div class="row-2"><div><label class="lbl">Bank name</label><input class="inp" data-mbank="name" value="${esc(b.name||"")}" placeholder="HSBC UK"></div>
+        <div><label class="lbl">Account holder / name</label><input class="inp" data-mbank="holder" value="${esc(b.holder||"")}" placeholder="Acme Trading Ltd."></div></div>
+      <div><label class="lbl">Bank address</label><input class="inp" data-mbank="address" value="${esc(b.address||"")}" placeholder="Branch address"></div>
+      <div class="row-2"><div><label class="lbl">IBAN</label><input class="inp" data-mbank="iban" value="${esc(b.iban||"")}" placeholder="GB29 NWBK 6016 1331 9268 19"></div>
+        <div><label class="lbl">Account number</label><input class="inp" data-mbank="account" value="${esc(b.account||"")}" placeholder="12345678"></div></div>
+      <div><label class="lbl">SWIFT / BIC</label><input class="inp" data-mbank="swift" value="${esc(b.swift||"")}" placeholder="HBUKGB4B"></div>
+
+      <div class="drawer-sub">Company logo</div>
+      <div>
+        ${d.logoKey&&files[d.logoKey]
+          ? `<div style="display:flex;gap:12px;align-items:center;border:1px solid var(--ink-200);border-radius:12px;padding:10px">
+              <div class="logo-preview-box"><img src="${files[d.logoKey].dataUrl}"></div>
+              <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(files[d.logoKey].name)}</div>
+              <div style="font-size:12px;color:var(--ink-400)">${files[d.logoKey].width?Math.round(files[d.logoKey].width)+"×"+Math.round(files[d.logoKey].height):""}</div>
+              <div style="margin-top:6px;display:flex;gap:8px"><button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" data-act="co-logo-pick">Replace</button><button type="button" class="btn btn-ghost" style="padding:4px 8px;font-size:12px" data-act="co-logo-remove">Remove</button></div></div>
+            </div>`
+          : `<button type="button" class="btn btn-secondary dashed" style="width:100%;padding:16px" data-act="co-logo-pick">+ Upload a logo</button><div style="font-size:12px;color:var(--ink-400);margin-top:6px">PNG, JPG, JPEG, WebP or SVG · aspect ratio preserved · used automatically when this company is the seller</div>`}
+        <input type="file" accept="${ALLOWED_LOGO}" id="co-logo-input" style="display:none">
+      </div>
+    </div>
+    <div class="df"><button class="btn btn-secondary" data-act="close-modal">Cancel</button><button class="btn btn-primary" data-act="save-co" ${d.name.trim()&&!busy?'':'disabled'}>${busy?"Saving…":(modal.editing?"Save changes":"Add company")}</button></div>
+    </div></div>`;
+}
+
+/* ---- Auth / connection screens ---- */
+function authBrand(){ return `<div class="auth-brand"><span class="mark"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="9.5" cy="12" r="1.4" fill="#fff"/><circle cx="14.5" cy="12" r="1.4" fill="#fff"/><path d="M6 10.5C6 8.6 7.6 7 9.5 7h5C16.4 7 18 8.6 18 10.5V17l-1.6-1.1a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0l-.8-.6a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0L8.4 15.9a1 1 0 0 0-1.2 0L6 17z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span><div><div class="title">DrMonster <span>AI</span></div><div class="sub">Document Studio</div></div></div>`; }
+function viewConnect(){
+  return `<div class="auth-wrap"><div class="auth-card">${authBrand()}
+    <h2>Connect Supabase</h2><p class="lead">Enter your Supabase project URL and public anon key to enable secure storage.</p>
+    ${connect.error?`<div class="auth-err">${esc(connect.error)}</div>`:""}
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div><label class="lbl">Project URL</label><input class="inp" data-cfield="url" value="${esc(connect.url)}" placeholder="https://xxxxxxxx.supabase.co"></div>
+      <div><label class="lbl">Anon public key</label><input class="inp" data-cfield="key" value="${esc(connect.key)}" placeholder="eyJhbGciOi..." type="password"></div>
+      <button class="btn btn-primary" style="width:100%" data-act="save-connect">Save &amp; continue</button>
+    </div>
+    <div class="auth-note"><b>Where to find these:</b> Supabase Dashboard → your project → <b>Project Settings → API</b>. Copy the <b>Project URL</b> and the <b>anon / public</b> key. Never paste the <b>service_role</b> key here. Run <code>supabase/schema.sql</code> once in the SQL Editor first.</div>
+  </div></div>`;
+}
+function viewLogin(){
+  const signup=auth.mode==="signup";
+  return `<div class="auth-wrap"><div class="auth-card">${authBrand()}
+    <h2>${signup?"Create your account":"Sign in"}</h2><p class="lead">${signup?"Set up secure access to your workspace.":"Access your companies and documents."}</p>
+    ${auth.notice?`<div class="auth-ok">${esc(auth.notice)}</div>`:""}
+    ${auth.error?`<div class="auth-err">${esc(auth.error)}</div>`:""}
+    <form data-act="auth-submit" style="display:flex;flex-direction:column;gap:14px">
+      <div><label class="lbl">Email</label><input class="inp" type="email" data-afield="email" value="${esc(auth.email)}" placeholder="you@company.com" autocomplete="username"></div>
+      <div><label class="lbl">Password</label><input class="inp" type="password" data-afield="password" value="${esc(auth.password)}" placeholder="••••••••" autocomplete="${signup?'new-password':'current-password'}"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%" ${auth.busy?'disabled':''}>${auth.busy?(signup?"Creating…":"Signing in…"):(signup?"Create account":"Sign in")}</button>
+    </form>
+    <div class="auth-alt">${signup?"Already have an account? ":"Need an account? "}<a data-act="auth-toggle">${signup?"Sign in":"Create account"}</a></div>
+    <div class="auth-alt" style="margin-top:8px"><button class="link-btn" data-act="reconnect">Change Supabase connection (${esc(SB.host)})</button></div>
+  </div></div>`;
+}
+function viewLoading(){ return `<div class="auth-wrap"><div style="text-align:center"><div class="spin"></div><div style="margin-top:14px;color:var(--ink-500);font-size:13px">Loading your workspace…</div></div></div>`; }
+function renderSideUser(){
+  const host=document.getElementById("side-user"); if(!host)return;
+  const email=SB.email||"—"; const initials=(email[0]||"D").toUpperCase()+(email.split("@")[0].slice(-1)||"M").toUpperCase();
+  host.innerHTML=`<div class="avatar">${esc(initials)}</div>
+    <div style="flex:1;min-width:0"><div class="n" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(email)}</div><div class="m">Signed in</div></div>
+    <button class="btn btn-ghost" style="padding:6px" title="Sign out" data-act="sign-out"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>`;
+}
+
+function viewEdit(){
+  const action=`<button class="btn btn-primary" data-route="new">${svg('plus')}New Invoice</button>`;
+  const drafts=invoices.filter(i=>!isFinalized(i));
+  const drop = uploading
+    ? `<div class="dropzone" style="cursor:default"><div class="spin"></div><div style="margin-top:12px;font-size:13px;color:var(--ink-600)">${esc(uploadMsg||"Working…")}</div></div>`
+    : `<div class="dropzone" id="dropzone" data-act="doc-upload-pick">
+        <div style="width:44px;height:44px;border-radius:11px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center">${svg('editdoc')}</div>
+        <div style="margin-top:12px;font-weight:600">Upload a document to edit</div>
+        <div style="font-size:12.5px;color:var(--ink-500);margin-top:4px;max-width:420px">Drop a file here or click to choose. Supported: <b>PDF, DOCX, PNG, JPG, JPEG</b>. Your original is preserved and never overwritten — the revised copy is saved as a new revision.</div>
+        <input type="file" accept="${ALLOWED_DOC}" id="doc-upload-input" style="display:none">
+      </div>`;
+  let list;
+  if(!drafts.length){ list=`<div class="card empty-state" style="padding:40px 24px"><div class="ic">${svg('editdoc')}</div><h3 style="margin:16px 0 0">No drafts yet</h3><p style="color:var(--ink-500);max-width:380px">Upload a document above, or resume drafts here. Finalized invoices open locked from the Documents library.</p></div>`; }
+  else list=`<div class="card" style="overflow:hidden;margin-top:24px"><div style="padding:14px 16px;border-bottom:1px solid var(--ink-100);font-size:13px;font-weight:600">Your drafts</div><table><thead><tr><th>Draft</th><th>Seller</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th></th></tr></thead>
+    <tbody>${drafts.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number||"—")}${i.revision>1?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}${i.source?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">from upload</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">Edit ${svg('arrow')}</button></td></tr>`;}).join("")}</tbody></table></div>`;
+  return topbar("Edit Document","Upload an existing invoice to revise it, or resume a draft.",["Workspace","Edit Document"],action)+`<div class="container">${drop}${list}</div>`;
+}
+const VIEWS={
+  dashboard:viewDashboard, companies:viewCompanies, new:viewNew, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
+  templates:()=>viewComing("Templates",["Library","Templates"],"Reusable layouts for invoices and contracts so every document stays on-brand.",["Commercial invoice, proforma and packing list layouts","Contract templates with clause library","Per-company default terms and branding"]),
+};
+
+function render(){
+  const app=document.querySelector(".app");
+  const main=document.getElementById("main");
+  if(!SB.configured()){ app.classList.add("auth-mode"); main.innerHTML=viewConnect(); return; }
+  if(!SB.session){ app.classList.add("auth-mode"); main.innerHTML=viewLogin(); return; }
+  if(appState==="loading"){ app.classList.add("auth-mode"); main.innerHTML=viewLoading(); return; }
+  app.classList.remove("auth-mode");
+  renderNav(); renderSideUser();
+  main.innerHTML=(VIEWS[route]||viewDashboard)()+drawer()+previewOverlay()+aiProposalOverlay();
+}
+
+/* ---------------- async actions ---------------- */
+function emptyCompany(){ return {name:"",address:"",city:"",country:"",taxId:"",registration:"",phone:"",email:"",website:"",currency:"USD",notes:"",bank:{name:"",address:"",holder:"",iban:"",account:"",swift:""},logoPath:null,logoKey:null}; }
+async function doAuth(){
+  if(auth.busy)return; auth.error=""; auth.notice="";
+  if(!auth.email.trim()||!auth.password){ auth.error="Enter your email and password."; render(); return; }
+  auth.busy=true; render();
+  try{
+    if(auth.mode==="signup"){
+      const res=await SB.signUp(auth.email.trim(),auth.password);
+      if(!res.session){ auth.busy=false; auth.mode="signin"; auth.password=""; auth.notice="Account created. If email confirmation is enabled, confirm via the email link, then sign in."; render(); return; }
+    } else { await SB.signIn(auth.email.trim(),auth.password); }
+    auth.busy=false; auth.password=""; appState="loading"; render();
+    await bootData(); appState="ready"; route="dashboard"; render();
+  }catch(err){ auth.busy=false; appState="ready"; auth.error=err.message||String(err); render(); }
+}
+async function saveCompany(){
+  if(busy||!editDraft.name.trim())return; busy=true; render();
+  try{
+    if(modal.editing){
+      const oldLogo=modal.editing.logoPath||null;
+      const [row]=await SB.update("companies",modal.editing.id,coToRow(editDraft));
+      const updated=coFromRow(row); const idx=companies.findIndex(c=>c.id===updated.id); if(idx>=0)companies[idx]=updated;
+      if(oldLogo&&oldLogo!==updated.logoPath) SB.removeObject(LOGO_BUCKET,oldLogo);
+    } else {
+      const [row]=await SB.insert("companies",{...coToRow(editDraft),user_id:SB.uid});
+      companies.unshift(coFromRow(row));
+    }
+    busy=false; modal=null; editDraft=null; render();
+  }catch(err){ busy=false; render(); toast("Could not save company: "+err.message,true); }
+}
+async function deleteCompany(id){
+  const c=companies.find(x=>x.id===id); if(!c)return;
+  if(!confirm(`Delete "${c.name}"? This permanently removes the company from Supabase.`))return;
+  try{ await SB.remove("companies",id); if(c.logoPath)SB.removeObject(LOGO_BUCKET,c.logoPath); companies=companies.filter(x=>x.id!==id); render(); }
+  catch(err){ toast("Could not delete: "+err.message,true); }
+}
+// Build the DB row from the current draft. Snapshots freeze seller/buyer (incl. bank + logo)
+// so a finalized invoice never changes if the company is later edited. All money is
+// computed here by the generator — never supplied from outside.
+function buildDocRow(d,status){
+  const seller=companies.find(c=>c.id===d.sellerId)||d.seller||null;
+  const buyer=companies.find(c=>c.id===d.buyerId)||d.buyer||null;
+  const items=d.items.map(x=>({id:x.id,description:x.description||"",quantity:isFinite(x.quantity)?x.quantity:0,unit:x.unit||"",unitPrice:isFinite(x.unitPrice)?x.unitPrice:0}));
+  const t=computeTotals(items,d.currency);
+  return { user_id:SB.uid, number:(d.number||"").trim(), number_mode:d.numberMode||"auto", doc_date:d.date, currency:d.currency,
+    seller_id:d.sellerId||null, buyer_id:d.buyerId||null, seller_snapshot:snapCompany(seller), buyer_snapshot:snapCompany(buyer),
+    items, shipping_route:d.shippingRoute||null, payment_terms:d.paymentTerms||null, notes:d.notes||null,
+    logo_mode:d.logoMode, logo_size:d.logoSize, custom_logo_path:d.customLogoKey||null,
+    status, subtotal:t.subtotal, total:t.total, revision:d.revision||1, revision_of:d.revisionOf||null,
+    finalized_at: status==="finalized" ? new Date().toISOString() : null,
+    source_file_path:d.source?d.source.path:null, source_file_name:d.source?d.source.name:null, source_file_type:d.source?d.source.type:null, source_extraction:d.source?d.source.extraction:null };
+}
+function upsertInvoiceCache(doc){ const i=invoices.findIndex(x=>x.id===doc.id); if(i>=0)invoices[i]=doc; else invoices.unshift(doc); }
+
+async function saveDraft(){
+  if(busy||!draft)return;
+  if(isFinalized(draft)){ toast("Finalized invoices can't be edited — create a revision.",true); return; }
+  if(!draft.items.some(i=>i.description.trim())){ toast("Add at least one product line before saving.",true); return; }
+  busy=true; render();
+  try{
+    const row=buildDocRow(draft,"draft");
+    let saved;
+    if(draft.id){ const [u]=await SB.update("documents",draft.id,row); saved=docFromRow(u); }
+    else { const [ins]=await SB.insert("documents",row); saved=docFromRow(ins); }
+    Object.assign(draft,saved); upsertInvoiceCache(saved);
+    busy=false; render(); toast("Draft saved.");
+  }catch(err){ busy=false; render(); toast("Could not save draft: "+err.message,true); }
+}
+
+async function finalizeDoc(){
+  if(busy||!draft)return;
+  if(isFinalized(draft)){ toast("This invoice is already finalized.",true); return; }
+  // Validation — never invent missing data; require the essentials to finalize.
+  const missing=[];
+  if(!draft.date) missing.push("invoice date");
+  if(!draft.sellerId && !draft.seller) missing.push("seller");
+  if(!draft.items.some(i=>i.description.trim())) missing.push("at least one product with a description");
+  if(missing.length){ toast("Cannot finalize — missing: "+missing.join(", ")+".",true); return; }
+  if(!confirm("Finalize this invoice? Once finalized it is locked and any change requires a new revision.")) return;
+  busy=true; render();
+  try{
+    // Auto numbering is owned by the generator: allocate + persist the counter now.
+    if(draft.numberMode==="auto"){ draft.number=await allocateNumber(draft.date); }
+    else if(!draft.number.trim()){ busy=false; render(); toast("Enter a manual invoice number, or switch to Auto.",true); return; }
+    const row=buildDocRow(draft,"finalized");
+    let saved;
+    if(draft.id){ const [u]=await SB.update("documents",draft.id,row); saved=docFromRow(u); }
+    else { const [ins]=await SB.insert("documents",row); saved=docFromRow(ins); }
+    draft=saved; upsertInvoiceCache(saved);
+    busy=false; render();
+    toast("Invoice "+saved.number+" finalized.");
+    openPreview(saved); // final preview + export
+  }catch(err){ busy=false; render(); toast("Could not finalize: "+err.message,true); }
+}
+
+// Revision workflow — clone a finalized invoice into a new editable draft, linked to the original.
+function createRevision(){
+  if(!draft||!isFinalized(draft))return;
+  const original=draft;
+  draft={
+    id:null, status:"draft",
+    revision:(original.revision||1)+1,
+    revisionOf: original.revisionOf || original.id,   // always point at the root document
+    finalizedAt:null,
+    numberMode: original.numberMode||"manual",
+    number: original.number,           // revisions keep the base reference; shown as "Revision N"
+    date: new Date().toISOString().slice(0,10),
+    currency: original.currency,
+    sellerId: original.sellerId, buyerId: original.buyerId,
+    seller: original.seller, buyer: original.buyer,
+    items: original.items.map(x=>({...x, id:uid("li")})),
+    shippingRoute: original.shippingRoute, paymentTerms: original.paymentTerms, notes: original.notes,
+    logoMode: original.logoMode, logoSize: original.logoSize, customLogoKey: original.customLogoKey,
+    source: original.source ? {...original.source} : null   // keep the uploaded original linked across revisions
+  };
+  route="new"; window.scrollTo(0,0); render();
+  toast("Revision "+draft.revision+" started — the original invoice is unchanged.");
+}
+
+async function openDoc(id){
+  const d=invoices.find(x=>x.id===id); if(!d)return;
+  draft=JSON.parse(JSON.stringify(d));
+  srcOpen=true; extOpen=false; ai.proposal=null; ai.instruction="";
+  route="new"; window.scrollTo(0,0); render();
+  if(draft.source&&draft.source.path&&!draft.source.url){
+    try{ const u=await SB.signedUrl(SOURCE_BUCKET,draft.source.path,3600); if(u){draft.source.url=u; render();} }catch(e){}
+  }
+}
+async function saveNumbering(){
+  settings.numbering.nextSeq=Math.max(1,parseInt(settings.numbering.nextSeq,10)||1);
+  if(!settings.numbering.pattern.trim()){ toast("Enter a number pattern.",true); return; }
+  try{ await saveSettings(); toast("Numbering settings saved."); }
+  catch(err){ toast("Could not save settings: "+err.message,true); }
+}
+
+/* ---------------- AI assistant (Claude proposes; the app verifies & computes) ---------------- */
+// Calls the ai-invoice Edge Function. The Anthropic key never touches the browser;
+// this sends the user's Supabase JWT so the function can authenticate the request.
+async function callAI(payload){
+  await SB.ensureFresh();
+  const r=await fetch(`${SB.url}/functions/v1/ai-invoice`,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB.key,Authorization:"Bearer "+(SB.session&&SB.session.access_token)},body:JSON.stringify(payload)});
+  const t=await r.text(); let d={}; try{ d=t?JSON.parse(t):{}; }catch(e){ d={error:t}; }
+  if(r.status===404) throw new Error("The AI assistant isn't deployed yet. Deploy the ai-invoice Edge Function and set ANTHROPIC_API_KEY — see SUPABASE_SETUP.md.");
+  if(r.status===401) throw new Error("Session expired. Sign in again to use the assistant.");
+  if(!r.ok) throw new Error(d.error||("Request failed ("+r.status+")"));
+  return d;
+}
+function normName(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+// Match a Claude-proposed name against the verified Companies database (app decides, not AI).
+function matchCompany(name){
+  const n=normName(name); if(!n)return null; let best=null,score=0;
+  for(const c of companies){ const cn=normName(c.name); let s=0;
+    if(cn===n)s=100; else if(cn.includes(n)||n.includes(cn))s=72;
+    else { const a=new Set(n.split(" ")), b=cn.split(" "); const inter=b.filter(w=>a.has(w)).length; s=inter/Math.max(1,Math.max(a.size,b.length))*60; }
+    if(s>score){score=s;best=c;} }
+  return score>=45?best:null;
+}
+// Build a proposed draft from Claude's structured fields. Company data comes ONLY from
+// the matched DB record; quantities/prices are validated; nothing sensitive is taken from AI.
+function buildProposal(p){
+  const after=JSON.parse(JSON.stringify(draft));
+  const warnings=[]; const needs=Array.isArray(p.needs)?p.needs.slice():[];
+  if(p.seller_name){ const m=matchCompany(p.seller_name); if(m){ after.sellerId=m.id; after.seller=null; } else warnings.push(`Seller “${p.seller_name}” isn't in your Companies. Add it on the Companies page first — company details are loaded from your database, never invented.`); }
+  if(p.buyer_name){ const m=matchCompany(p.buyer_name); if(m){ after.buyerId=m.id; after.buyer=null; } else warnings.push(`Buyer “${p.buyer_name}” isn't in your Companies. Add it on the Companies page first.`); }
+  if(p.currency && CURRENCIES.some(c=>c.code===p.currency)) after.currency=p.currency;
+  else if(!p.currency && p.seller_name){ const s=companies.find(c=>c.id===after.sellerId); if(s&&s.currency) after.currency=s.currency; }
+  if(Array.isArray(p.items) && p.items.length){
+    after.items=p.items.map((it,idx)=>{
+      const desc=String(it.description||"").trim(); const label=desc||("item "+(idx+1));
+      let q=it.quantity, up=it.unit_price;
+      if(q==null||!isFinite(q)){ needs.push("Quantity for "+label); q=0; }
+      if(up==null||!isFinite(up)){ needs.push("Unit price for "+label); up=0; }
+      return { id:uid("li"), description:desc, quantity:Math.max(0,Number(q)||0), unit:String(it.unit||"").trim(), unitPrice:Math.max(0,Number(up)||0) };
+    });
+  }
+  if(p.shipping_route!=null) after.shippingRoute=String(p.shipping_route);
+  if(p.payment_terms!=null) after.paymentTerms=String(p.payment_terms);
+  if(p.notes!=null) after.notes=String(p.notes);
+  return { after, rows:computeDiff(draft,after), warnings, needs:[...new Set(needs)], message:p.message||"" };
+}
+// OLD → NEW diff. Totals are recomputed here in application code.
+function computeDiff(before,after){
+  const rows=[]; const nameOf=(d,which)=>{ const c=companies.find(x=>x.id===d[which+"Id"])||d[which]; return c?c.name:"—"; };
+  if(before.sellerId!==after.sellerId) rows.push(["Seller",nameOf(before,"seller"),nameOf(after,"seller")]);
+  if(before.buyerId!==after.buyerId) rows.push(["Buyer",nameOf(before,"buyer"),nameOf(after,"buyer")]);
+  if(before.currency!==after.currency) rows.push(["Currency",before.currency,after.currency]);
+  if((before.shippingRoute||"")!==(after.shippingRoute||"")) rows.push(["Shipping route",before.shippingRoute||"—",after.shippingRoute||"—"]);
+  if((before.paymentTerms||"")!==(after.paymentTerms||"")) rows.push(["Payment terms",before.paymentTerms||"—",after.paymentTerms||"—"]);
+  if((before.notes||"")!==(after.notes||"")) rows.push(["Notes",before.notes||"—",after.notes||"—"]);
+  const key=a=>JSON.stringify(a.map(i=>[i.description,i.quantity,i.unit,i.unitPrice]));
+  const itemsChanged=key(before.items)!==key(after.items);
+  if(itemsChanged){
+    if(before.items.length===after.items.length){
+      after.items.forEach((it,idx)=>{ const b=before.items[idx];
+        if((b.description||"")!==(it.description||"")) rows.push([`Item ${idx+1} description`,b.description||"—",it.description||"—"]);
+        if(b.quantity!==it.quantity) rows.push([`Item ${idx+1} quantity`,String(b.quantity),String(it.quantity)]);
+        if((b.unit||"")!==(it.unit||"")) rows.push([`Item ${idx+1} unit`,b.unit||"—",it.unit||"—"]);
+        if(b.unitPrice!==it.unitPrice) rows.push([`Item ${idx+1} unit price`,money(b.unitPrice,before.currency),money(it.unitPrice,after.currency)]);
+      });
+    } else {
+      rows.push(["Products",`${before.items.length} line(s)`,after.items.map(i=>`${i.quantity||0}×${i.description||"—"}`).join(", ")||"—"]);
+    }
+  }
+  if(itemsChanged || before.currency!==after.currency){
+    rows.push(["Total",money(computeTotals(before.items,before.currency).total,before.currency),money(computeTotals(after.items,after.currency).total,after.currency)]);
+  }
+  return rows;
+}
+async function askClaude(){
+  if(ai.busy||!draft)return;
+  if(isFinalized(draft)){ ai.error="This invoice is finalized — create a revision to use the assistant."; render(); return; }
+  const instr=(ai.instruction||"").trim();
+  if(!instr){ ai.error="Type an instruction first."; render(); return; }
+  ai.busy=true; ai.error=""; render();
+  try{
+    const has=draft.sellerId||draft.buyerId||draft.items.some(i=>i.description.trim());
+    const cd=has?{ currency:draft.currency,
+      sellerName:(companies.find(c=>c.id===draft.sellerId)||draft.seller||{}).name||null,
+      buyerName:(companies.find(c=>c.id===draft.buyerId)||draft.buyer||{}).name||null,
+      items:draft.items.map(i=>({description:i.description,quantity:i.quantity,unit:i.unit,unitPrice:i.unitPrice})),
+      shippingRoute:draft.shippingRoute, paymentTerms:draft.paymentTerms, notes:draft.notes }:null;
+    const res=await callAI({ instruction:instr, companyNames:companies.map(c=>c.name), currentDraft:cd });
+    ai.busy=false;
+    if(!res.proposal){ ai.error="No proposal returned."; render(); return; }
+    ai.proposal=buildProposal(res.proposal); render();
+  }catch(err){ ai.busy=false; ai.error=err.message||String(err); render(); }
+}
+function applyProposal(){ if(!ai.proposal)return; draft=ai.proposal.after; ai.proposal=null; ai.instruction=""; ai.error=""; render(); toast("AI changes applied — review the preview, then Save draft or Finalize."); }
+function aiProposalOverlay(){
+  if(!ai.proposal)return "";
+  const p=ai.proposal;
+  const rowsHtml=p.rows.length?p.rows.map(r=>`<div class="diff-row"><div class="diff-k">${esc(r[0])}</div><div class="diff-v"><span class="old">${esc(String(r[1]))}</span><span class="arrow">→</span><span class="new">${esc(String(r[2]))}</span></div></div>`).join(""):`<div style="color:var(--ink-400);font-size:13px">No field changes detected.</div>`;
+  return `<div class="pv-scrim" style="align-items:center;justify-content:center;padding:24px">
+    <div class="ai-modal">
+      <div class="ai-modal-h"><h3 style="margin:0;font-size:15px;font-weight:700">Proposed changes</h3><div style="font-size:12px;color:var(--ink-400);margin-top:2px">${esc(p.message||"Review before applying. The app recalculates every total.")}</div></div>
+      <div class="ai-modal-b">
+        ${p.warnings.length?`<div class="ai-warn">${p.warnings.map(w=>`<div>⚠️ ${esc(w)}</div>`).join("")}</div>`:""}
+        ${p.needs.length?`<div class="ai-need"><b>Still needed:</b><ul style="margin:6px 0 0;padding-left:18px">${p.needs.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div>`:""}
+        <div class="diff-list">${rowsHtml}</div>
+      </div>
+      <div class="ai-modal-f"><button class="btn btn-secondary" data-act="ai-cancel">Cancel</button><button class="btn btn-primary" data-act="ai-apply">Apply changes</button></div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- Edit Existing Document (upload → preserve → extract → revise) ---------------- */
+const ALLOWED_DOC="application/pdf,.pdf,.docx,image/png,.png,image/jpeg,.jpg,.jpeg";
+function fileKind(file){ const n=(file.name||"").toLowerCase(), t=file.type||"";
+  if(t==="application/pdf"||n.endsWith(".pdf"))return "pdf";
+  if(t.includes("wordprocessingml")||n.endsWith(".docx"))return "docx";
+  if(t==="image/png"||n.endsWith(".png"))return "image";
+  if(t==="image/jpeg"||n.endsWith(".jpg")||n.endsWith(".jpeg"))return "image";
+  return null;
+}
+function u8ToBase64(u8){ let bin=""; const chunk=0x8000; for(let i=0;i<u8.length;i+=chunk)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+chunk)); return btoa(bin); }
+async function fileToBase64(file){ return u8ToBase64(new Uint8Array(await file.arrayBuffer())); }
+async function downscaleImage(file){
+  const dataUrl=await fileToDataUrl(file);
+  const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=dataUrl;});
+  const max=1600; let w=img.naturalWidth||max,h=img.naturalHeight||max; const s=Math.min(1,max/Math.max(w,h)); w=Math.max(1,Math.round(w*s)); h=Math.max(1,Math.round(h*s));
+  const c=document.createElement("canvas"); c.width=w;c.height=h; c.getContext("2d").drawImage(img,0,0,w,h);
+  const out=c.toDataURL("image/jpeg",0.85);
+  return { dataBase64: out.split(",")[1], mediaType:"image/jpeg" };
+}
+async function inflateRaw(bytes){ if(typeof DecompressionStream==="undefined")throw new Error("no-inflate"); const ds=new DecompressionStream("deflate-raw"); const ab=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer(); return new Uint8Array(ab); }
+// Read word/document.xml out of a .docx (ZIP) and reduce it to plain text — no libraries.
+async function docxToText(file){
+  const buf=new Uint8Array(await file.arrayBuffer()); const dv=new DataView(buf.buffer);
+  let eocd=-1; for(let i=buf.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+  if(eocd<0)throw new Error("bad-docx");
+  const cdOff=dv.getUint32(eocd+16,true), cnt=dv.getUint16(eocd+10,true); let p=cdOff, target=null;
+  for(let n=0;n<cnt && p+46<=buf.length;n++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true), compSize=dv.getUint32(p+20,true), fnLen=dv.getUint16(p+28,true), exLen=dv.getUint16(p+30,true), cmLen=dv.getUint16(p+32,true), lho=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(buf.subarray(p+46,p+46+fnLen));
+    if(name==="word/document.xml"){ target={method,compSize,lho}; break; }
+    p+=46+fnLen+exLen+cmLen;
+  }
+  if(!target)throw new Error("no-docxml");
+  const lfnLen=dv.getUint16(target.lho+26,true), lexLen=dv.getUint16(target.lho+28,true);
+  const start=target.lho+30+lfnLen+lexLen; const comp=buf.subarray(start,start+target.compSize);
+  const xmlBytes= target.method===0 ? comp : await inflateRaw(comp);
+  let xml=new TextDecoder("utf-8").decode(xmlBytes);
+  xml=xml.replace(/<w:tab\b[^>]*\/>/g,"\t").replace(/<\/w:p>/g,"\n").replace(/<w:br\b[^>]*\/?>/g,"\n");
+  return xml.replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/\n{3,}/g,"\n\n").trim();
+}
+async function buildExtractPayload(file,kind){
+  if(kind==="docx"){ let text; try{ text=await docxToText(file); }catch(e){ const why=String(e.message||e)==="no-inflate"?" (this browser can't decompress it)":""; throw new Error("Couldn't read the DOCX contents"+why+". Try exporting the document as a PDF and uploading that."); } if(!text||text.trim().length<5) throw new Error("No readable text was found in that DOCX. Export it as a PDF and upload that instead."); return { text }; }
+  if(kind==="image") return await downscaleImage(file);
+  const b64=await fileToBase64(file); if(b64.length>7500000) throw new Error("This PDF is too large to analyse. Upload a smaller/compressed PDF, or a page image."); return { dataBase64:b64, mediaType:"application/pdf" };
+}
+async function callExtract(payload){
+  await SB.ensureFresh();
+  const r=await fetch(`${SB.url}/functions/v1/ai-document`,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB.key,Authorization:"Bearer "+(SB.session&&SB.session.access_token)},body:JSON.stringify(payload)});
+  const t=await r.text(); let d={}; try{ d=t?JSON.parse(t):{}; }catch(e){ d={error:t}; }
+  if(r.status===404) throw new Error("Document analysis isn't deployed yet. Deploy the ai-document Edge Function and set ANTHROPIC_API_KEY — see SUPABASE_SETUP.md.");
+  if(r.status===413) throw new Error("That file is too large for analysis. Try a smaller or compressed file.");
+  if(!r.ok) throw new Error(d.error||("Request failed ("+r.status+")"));
+  return d;
+}
+function num(v){ return (v!=null && isFinite(v)) ? Math.max(0,Number(v)) : 0; }
+function parseIsoDate(s){ if(!s)return null; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return isNaN(new Date(s+"T00:00:00"))?null:s; const d=new Date(s); if(isNaN(d))return null; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+// Build an editable draft from the extracted fields. Companies are matched to the DB
+// (verified data); quantities/prices are validated; totals are computed by the app.
+function buildDraftFromExtraction(ext,source){
+  const d=freshDraft(); d.source=source;
+  d.numberMode = ext.doc_number ? "manual" : "auto";
+  if(ext.doc_number) d.number=String(ext.doc_number);
+  const iso=parseIsoDate(ext.doc_date); if(iso) d.date=iso;
+  if(ext.currency && CURRENCIES.some(c=>c.code===ext.currency)) d.currency=ext.currency;
+  if(Array.isArray(ext.items)&&ext.items.length){
+    const items=ext.items.filter(it=>it && String(it.description||"").trim()).map(it=>({id:uid("li"),description:String(it.description||"").trim(),quantity:num(it.quantity),unit:String(it.unit||"").trim(),unitPrice:num(it.unit_price)}));
+    if(items.length) d.items=items;
+  }
+  d.shippingRoute=ext.shipping_route?String(ext.shipping_route):"";
+  d.paymentTerms=ext.payment_terms?String(ext.payment_terms):"";
+  d.notes=ext.notes?String(ext.notes):"";
+  if(ext.seller_name){ const m=matchCompany(ext.seller_name); if(m)d.sellerId=m.id; else d.seller={name:String(ext.seller_name),address:ext.seller_address?String(ext.seller_address):"",taxId:ext.seller_tax?String(ext.seller_tax):"",bank:{},_unverified:true}; }
+  if(ext.buyer_name){ const m=matchCompany(ext.buyer_name); if(m)d.buyerId=m.id; else d.buyer={name:String(ext.buyer_name),address:ext.buyer_address?String(ext.buyer_address):"",taxId:ext.buyer_tax?String(ext.buyer_tax):"",bank:{},_unverified:true}; }
+  return d;
+}
+async function handleUpload(file){
+  if(uploading||!file)return;
+  const kind=fileKind(file);
+  if(!kind){ toast("Unsupported file. Upload PDF, DOCX, PNG, JPG or JPEG.",true); return; }
+  if(file.size>10*1024*1024){ toast("File is larger than 10 MB — please upload a smaller file.",true); return; }
+  uploading=true; uploadMsg="Preserving your original & analysing it with Claude…"; render();
+  try{
+    // (1)(2) Preserve the original — write-once random path; never overwritten.
+    const safe=(file.name||"document").replace(/[^a-zA-Z0-9._-]/g,"_");
+    const path=`${SB.uid}/${Math.random().toString(36).slice(2,10)}-${safe}`;
+    await SB.upload(SOURCE_BUCKET,path,file);
+    // (3)(4) Analyse & extract fields.
+    const payload=await buildExtractPayload(file,kind); payload.companyNames=companies.map(c=>c.name);
+    const res=await callExtract(payload);
+    const ext=res.extraction||{};
+    const url=await SB.signedUrl(SOURCE_BUCKET,path,3600);
+    const source={ path, name:file.name, type:kind, url, extraction:ext, textPreview: kind==="docx"?(payload.text||"").slice(0,4000):null };
+    draft=buildDraftFromExtraction(ext,source);
+    genMsg=null; preview=null; ai.proposal=null; ai.instruction=""; ai.error=""; srcOpen=true; extOpen=false;
+    uploading=false; route="new"; window.scrollTo(0,0); render();
+    if(ext.is_invoice===false) toast("This doesn't look like an invoice — extracted fields may be sparse. Review carefully.",true);
+    else toast("Analysed. Review the extracted fields, then tell the assistant what to change.");
+  }catch(err){ uploading=false; render(); toast("Upload / analysis failed: "+(err.message||err),true); }
+}
+// Panel shown in the editor when the draft came from an uploaded document.
+function sourcePanel(){
+  const s=draft&&draft.source; if(!s)return "";
+  const ext=s.extraction||{}; const warns=ext.warnings||[];
+  const unver=[]; if(draft.seller&&draft.seller._unverified)unver.push(draft.seller.name); if(draft.buyer&&draft.buyer._unverified)unver.push(draft.buyer.name);
+  const preview = (s.type==="image"&&s.url) ? `<img src="${esc(s.url)}" alt="original" style="max-width:100%;max-height:360px;display:block;margin:0 auto;border-radius:8px;border:1px solid var(--ink-200)">`
+    : (s.type==="pdf"&&s.url) ? `<iframe src="${esc(s.url)}" title="Original PDF" style="width:100%;height:420px;border:1px solid var(--ink-200);border-radius:8px"></iframe>`
+    : (s.type==="docx") ? `<div style="max-height:280px;overflow:auto;border:1px solid var(--ink-200);border-radius:8px;padding:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;color:var(--ink-700)">${esc((s.textPreview||"").trim()||"(DOCX text preview unavailable — download the original above)")}</div>`
+    : `<div style="color:var(--ink-400);font-size:13px">Preview unavailable — use Download to open the original.</div>`;
+  const row=(k,v)=>v?`<div style="display:flex;gap:8px;font-size:12.5px;padding:3px 0"><span style="width:120px;flex:none;color:var(--ink-400)">${esc(k)}</span><span style="color:var(--ink-800)">${esc(String(v))}</span></div>`:"";
+  return `<div class="src-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px"><span class="src-badge">DOC</span><div style="min-width:0"><div style="font-weight:600;font-size:14px">Original document (preserved)</div><div style="font-size:12px;color:var(--ink-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px">${esc(s.name||"")}</div></div></div>
+      <div style="display:flex;gap:8px">${s.url?`<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" data-act="download-original">Download</button>`:""}<button type="button" class="btn btn-ghost" style="padding:4px 10px;font-size:12px" data-act="src-toggle">${srcOpen?"Hide":"Show"}</button></div>
+    </div>
+    ${srcOpen?`
+    <div class="src-note">DrMonster regenerates the revised invoice in its own standard format — <b>this is not a pixel-for-pixel edit of your file</b>. Your uploaded original is preserved unchanged and is never overwritten. Fields below were read automatically — verify them.${ext.confidence?` Extraction confidence: <b>${esc(ext.confidence)}</b>.`:""}</div>
+    ${warns.length?`<div class="ai-warn" style="margin-top:10px">${warns.map(w=>`<div>⚠️ ${esc(w)}</div>`).join("")}</div>`:""}
+    ${unver.length?`<div class="ai-warn" style="margin-top:10px"><div>⚠️ ${esc(unver.join(", "))} ${unver.length>1?"are":"is"} not in your Companies — shown from the document (unverified). Add ${unver.length>1?"them":"it"} on the Companies page to use verified details.</div></div>`:""}
+    <div style="margin-top:12px">${preview}</div>
+    <div style="margin-top:12px;border-top:1px solid var(--ink-100);padding-top:10px">
+      <button type="button" class="btn btn-ghost" style="padding:2px 0;font-size:12px;font-weight:600;color:var(--ink-600)" data-act="ext-toggle">${extOpen?"▾":"▸"} Extracted information</button>
+      ${extOpen?`<div style="margin-top:6px">
+        ${row("Number",ext.doc_number)}${row("Date",ext.doc_date)}${row("Currency",ext.currency)}
+        ${row("Seller",ext.seller_name)}${row("Buyer",ext.buyer_name)}
+        ${row("Items",(ext.items||[]).map(i=>`${i.quantity==null?"?":i.quantity}× ${i.description||"—"}`).join("; "))}
+        ${row("Shipping",ext.shipping_route)}${row("Payment",ext.payment_terms)}${row("Notes",ext.notes)}
+        ${ext.summary?`<div style="font-size:12px;color:var(--ink-500);margin-top:6px;font-style:italic">${esc(ext.summary)}</div>`:""}
+      </div>`:""}
+    </div>`:""}
+  </div>`;
+}
+
+/* ---------------- final preview modal ---------------- */
+let preview=null; // {doc}
+function resolveParties(d){ return { seller: d.seller||companies.find(c=>c.id===d.sellerId)||null, buyer: d.buyer||companies.find(c=>c.id===d.buyerId)||null }; }
+function openPreview(doc){ preview={doc}; render(); }
+function closePreview(){ preview=null; render(); }
+function previewOverlay(){
+  if(!preview)return "";
+  const {seller,buyer}=resolveParties(preview.doc); const d=preview.doc;
+  return `<div class="pv-scrim">
+    <div class="pv-bar">
+      <div><h3>Final preview — ${esc(d.number||"draft")}</h3><div class="sub">${isFinalized(d)?"Finalized":"Draft"} · review before export. Exports match this preview; the logo keeps its aspect ratio.</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" data-act="export-pdf">${svg('print')}Export PDF</button>
+        <button class="btn btn-primary" data-act="export-docx">Export DOCX</button>
+        <button class="btn btn-ghost" data-act="close-preview">Close</button>
+      </div>
+    </div>
+    <div class="pv-scroll"><div class="pv-sheet">${a4(d,seller,buyer)}</div></div>
+  </div>`;
+}
+
+/* ---------------- exports ---------------- */
+function waitForImages(root){ const imgs=[...root.querySelectorAll("img")]; return Promise.all(imgs.map(img=>img.complete&&img.naturalWidth?Promise.resolve():new Promise(res=>{img.onload=res;img.onerror=res;}))); }
+async function exportPDF(doc){
+  const {seller,buyer}=resolveParties(doc);
+  const root=document.getElementById("print-root");
+  root.innerHTML=a4(doc,seller,buyer);
+  try{ await waitForImages(root); }catch(e){}
+  window.print();
+}
+
+// Fetch any logo (data: or signed http URL) and return a clean same-origin data URL (no canvas taint).
+async function logoDataUrl(logo){
+  if(!logo||!logo.dataUrl)return null;
+  if(logo.dataUrl.startsWith("data:"))return logo.dataUrl;
+  try{ const r=await fetch(logo.dataUrl); const b=await r.blob(); return await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result));fr.onerror=rej;fr.readAsDataURL(b);}); }
+  catch(e){ return null; }
+}
+// Rasterize a logo to PNG bytes at 2x for crisp output; preserve aspect ratio via the size cap.
+async function logoPng(doc){
+  const logo=resolveLogo(doc); if(!logo)return null;
+  const dataUrl=await logoDataUrl(logo); if(!dataUrl)return null;
+  const cap=LOGO_CAPS[doc.logoSize||"medium"];
+  const disp=fitLogo(logo.width,logo.height,cap);
+  const scale=2, cw=Math.max(1,Math.round(disp.w*scale)), ch=Math.max(1,Math.round(disp.h*scale));
+  const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=dataUrl;});
+  const canvas=document.createElement("canvas"); canvas.width=cw; canvas.height=ch;
+  const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,cw,ch); ctx.drawImage(img,0,0,cw,ch);
+  const pngUrl=canvas.toDataURL("image/png");
+  const bytes=base64ToU8(pngUrl.split(",")[1]);
+  return { bytes, wEmu:Math.round(disp.w*9525), hEmu:Math.round(disp.h*9525) };
+}
+
+async function exportDOCX(doc){
+  try{
+    const {seller,buyer}=resolveParties(doc);
+    const logo=await logoPng(doc).catch(()=>null);
+    const parts=buildDocx(doc,seller,buyer,logo);
+    const blob=zipStore(parts);
+    downloadBlob(blob,(doc.number||"invoice").replace(/[^\w.-]+/g,"_")+".docx");
+  }catch(err){ toast("Could not export DOCX: "+(err.message||err),true); }
+}
+function downloadBlob(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+
+/* ---- OOXML (.docx) builder — no external libraries ---- */
+function xesc(s){ return String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])).replace(/"/g,"&quot;"); }
+function wRun(text,o){ o=o||{}; const rpr=[]; if(o.b)rpr.push("<w:b/>"); if(o.i)rpr.push("<w:i/>"); if(o.color)rpr.push(`<w:color w:val="${o.color}"/>`); if(o.sz)rpr.push(`<w:sz w:val="${o.sz}"/><w:szCs w:val="${o.sz}"/>`); if(o.caps)rpr.push('<w:caps/>');
+  const parts=String(text??"").split("\n"); const runs=parts.map((p,i)=>`<w:r>${rpr.length?`<w:rPr>${rpr.join("")}</w:rPr>`:""}${i?"<w:br/>":""}<w:t xml:space="preserve">${xesc(p)}</w:t></w:r>`).join(""); return runs; }
+function wPara(runsXml,o){ o=o||{}; const ppr=[]; if(o.align)ppr.push(`<w:jc w:val="${o.align}"/>`); if(o.spacing)ppr.push(`<w:spacing w:before="${o.spacing[0]||0}" w:after="${o.spacing[1]||0}"/>`); if(o.shd)ppr.push(`<w:shd w:val="clear" w:fill="${o.shd}"/>`); if(o.border)ppr.push('<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="4" w:color="D4D9E2"/></w:pBdr>');
+  return `<w:p>${ppr.length?`<w:pPr>${ppr.join("")}</w:pPr>`:""}${runsXml}</w:p>`; }
+function wCell(runsXml,wdth,o){ o=o||{}; const shd=o.shd?`<w:shd w:val="clear" w:fill="${o.shd}"/>`:""; const jc=o.align?`<w:jc w:val="${o.align}"/>`:""; return `<w:tc><w:tcPr><w:tcW w:w="${wdth}" w:type="dxa"/>${shd}</w:tcPr><w:p>${jc?`<w:pPr>${jc}</w:pPr>`:""}${runsXml}</w:p></w:tc>`; }
+function buildDocx(doc,seller,buyer,logo){
+  const cur=doc.currency; const t=computeTotals(doc.items,cur);
+  const money2=(v)=>money(v,cur);
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const body=[];
+  // header: logo (or seller name) + title
+  if(logo){ body.push(`<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${logo.wEmu}" cy="${logo.hEmu}"/><wp:docPr id="1" name="logo"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${logo.wEmu}" cy="${logo.hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`); }
+  else if(seller){ body.push(wPara(wRun(seller.name,{b:1,sz:30}))); }
+  body.push(wPara(wRun("COMMERCIAL INVOICE",{b:1,sz:34,color:"1E3AAE"}),{spacing:[120,40]}));
+  body.push(wPara(wRun("Invoice: "+(doc.number||"—")+"     Date: "+fdate(doc.date)+(doc.revision>1?"     Revision "+doc.revision:""),{sz:20,color:"4C5973"}),{border:true,spacing:[0,160]}));
+  // parties (2-col table)
+  const partyText=(c)=>{ if(!c)return wRun("Not provided",{i:1,color:"8290A8",sz:18}); const lines=[c.name]; if(c.address)lines.push(c.address); if(c.city||c.country)lines.push([c.city,c.country].filter(Boolean).join(", ")); if(c.taxId)lines.push("Tax: "+c.taxId); if(c.email)lines.push(c.email); if(c.phone)lines.push(c.phone); return wRun(c.name,{b:1,sz:20})+wPara("")+wRun(lines.slice(1).join("\n"),{sz:18,color:"3E485D"}); };
+  body.push(`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4819"/><w:gridCol w:w="4819"/></w:tblGrid>`+
+    `<w:tr>${wCell(wRun("SELLER / EXPORTER",{b:1,sz:16,color:"1E3AAE",caps:1}),4819)}${wCell(wRun("BUYER / CONSIGNEE",{b:1,sz:16,color:"1E3AAE",caps:1}),4819)}</w:tr>`+
+    `<w:tr>${wCell(partyText(seller),4819)}${wCell(partyText(buyer),4819)}</w:tr></w:tbl>`);
+  body.push(wPara(""));
+  // items table
+  const cols=[4300,1000,1200,1500,1638];
+  const hdr=(txt,i,al)=>wCell(wRun(txt,{b:1,sz:16,color:"4C5973",caps:1}),cols[i],{shd:"F6F7F9",align:al});
+  let rows=`<w:tr>${hdr("Description",0)}${hdr("Qty",1,"right")}${hdr("Unit",2)}${hdr("Unit price",3,"right")}${hdr("Amount",4,"right")}</w:tr>`;
+  (doc.items.length?doc.items:[{description:"",quantity:0,unit:"",unitPrice:0}]).forEach(it=>{
+    rows+=`<w:tr>${wCell(wRun(it.description||"—",{sz:18}),cols[0])}${wCell(wRun(String(it.quantity||0),{sz:18}),cols[1],{align:"right"})}${wCell(wRun(it.unit||"—",{sz:18}),cols[2])}${wCell(wRun(money2(it.unitPrice||0),{sz:18}),cols[3],{align:"right"})}${wCell(wRun(money2(lineTotal(it,cur)),{sz:18,b:1}),cols[4],{align:"right"})}</w:tr>`;
+  });
+  body.push(`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="ECEEF2"/><w:bottom w:val="single" w:sz="4" w:color="ECEEF2"/><w:insideH w:val="single" w:sz="4" w:color="ECEEF2"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>${cols.map(c=>`<w:gridCol w:w="${c}"/>`).join("")}</w:tblGrid>${rows}</w:tbl>`);
+  // totals
+  body.push(wPara(wRun("Subtotal: "+money2(t.subtotal),{sz:20}),{align:"right",spacing:[160,0]}));
+  body.push(wPara(wRun("TOTAL ("+cur+"): "+money2(t.total),{b:1,sz:24,color:"1E3AAE"}),{align:"right",spacing:[40,160]}));
+  // shipping / payment
+  if(doc.shippingRoute) body.push(wPara(wRun("Shipping route: ",{b:1,sz:18})+wRun(doc.shippingRoute,{sz:18,color:"3E485D"})));
+  if(doc.paymentTerms) body.push(wPara(wRun("Payment terms: ",{b:1,sz:18})+wRun(doc.paymentTerms,{sz:18,color:"3E485D"})));
+  if(doc.notes) body.push(wPara(wRun("Notes: ",{b:1,sz:18})+wRun(doc.notes,{sz:18,color:"3E485D"})));
+  // bank details
+  const b=seller&&seller.bank;
+  if(b&&(b.name||b.iban||b.account||b.swift||b.holder)){
+    body.push(wPara(wRun("BANK DETAILS",{b:1,sz:16,color:"61708C",caps:1}),{border:true,spacing:[240,80]}));
+    const bl=[["Bank",b.name],["Account holder",b.holder],["Bank address",b.address],["IBAN",b.iban],["Account no.",b.account],["SWIFT / BIC",b.swift]].filter(x=>x[1]);
+    bl.forEach(x=>body.push(wPara(wRun(x[0]+": ",{b:1,sz:18})+wRun(x[1],{sz:18,color:"3E485D"}))));
+  }
+  body.push(wPara(wRun("This is a computer-generated commercial invoice issued via DrMonster AI.",{sz:16,color:"8290A8",i:1}),{spacing:[320,0]}));
+  const sect=`<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>`;
+  const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>${body.join("")}${sect}</w:body></w:document>`;
+  const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const docRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${logo?`<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>`:""}</Relationships>`;
+  const parts=[
+    {name:"[Content_Types].xml", data:strToU8(contentTypes)},
+    {name:"_rels/.rels", data:strToU8(rels)},
+    {name:"word/document.xml", data:strToU8(documentXml)},
+    {name:"word/_rels/document.xml.rels", data:strToU8(docRels)},
+  ];
+  if(logo) parts.push({name:"word/media/logo.png", data:logo.bytes});
+  return parts;
+}
+
+/* ---- minimal helpers: text/base64 -> bytes, and a STORED (no-compression) ZIP writer ---- */
+function strToU8(s){ return new TextEncoder().encode(s); }
+function base64ToU8(b64){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i); return u; }
+const CRC_TABLE=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(entries){
+  const enc=entries.map(e=>({name:strToU8(e.name), data:e.data, crc:crc32(e.data)}));
+  let size=0; enc.forEach(e=>{ size+=30+e.name.length+e.data.length; size+=46+e.name.length; }); size+=22;
+  const buf=new Uint8Array(size); const dv=new DataView(buf.buffer); let off=0; const central=[];
+  for(const e of enc){
+    const local=off;
+    dv.setUint32(off,0x04034b50,true); off+=4;
+    dv.setUint16(off,20,true); off+=2;      // version needed
+    dv.setUint16(off,0,true); off+=2;        // flags
+    dv.setUint16(off,0,true); off+=2;        // method 0 = store
+    dv.setUint16(off,0,true); off+=2;        // mod time
+    dv.setUint16(off,0x21,true); off+=2;     // mod date
+    dv.setUint32(off,e.crc,true); off+=4;
+    dv.setUint32(off,e.data.length,true); off+=4;
+    dv.setUint32(off,e.data.length,true); off+=4;
+    dv.setUint16(off,e.name.length,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;        // extra len
+    buf.set(e.name,off); off+=e.name.length;
+    buf.set(e.data,off); off+=e.data.length;
+    central.push({e,local});
+  }
+  const cstart=off;
+  for(const {e,local} of central){
+    dv.setUint32(off,0x02014b50,true); off+=4;
+    dv.setUint16(off,20,true); off+=2;       // version made by
+    dv.setUint16(off,20,true); off+=2;       // version needed
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0x21,true); off+=2;
+    dv.setUint32(off,e.crc,true); off+=4;
+    dv.setUint32(off,e.data.length,true); off+=4;
+    dv.setUint32(off,e.data.length,true); off+=4;
+    dv.setUint16(off,e.name.length,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint16(off,0,true); off+=2;
+    dv.setUint32(off,0,true); off+=4;
+    dv.setUint32(off,local,true); off+=4;
+    buf.set(e.name,off); off+=e.name.length;
+  }
+  const csize=off-cstart;
+  dv.setUint32(off,0x06054b50,true); off+=4;
+  dv.setUint16(off,0,true); off+=2;
+  dv.setUint16(off,0,true); off+=2;
+  dv.setUint16(off,central.length,true); off+=2;
+  dv.setUint16(off,central.length,true); off+=2;
+  dv.setUint32(off,csize,true); off+=4;
+  dv.setUint32(off,cstart,true); off+=4;
+  dv.setUint16(off,0,true); off+=2;
+  return new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener("submit",e=>{ const a=e.target.closest('[data-act="auth-submit"]'); if(a){ e.preventDefault(); doAuth(); } });
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-act]");
+  const act=a&&a.dataset.act;
+  // auth / connection
+  if(act==="save-connect"){ if(!connect.url.trim()||!connect.key.trim()){connect.error="Enter both the project URL and the anon key.";render();return;} connect.error=""; SB.setConfig(connect.url,connect.key); render(); return; }
+  if(act==="auth-toggle"){ auth.mode=auth.mode==="signup"?"signin":"signup"; auth.error=""; auth.notice=""; render(); return; }
+  if(act==="reconnect"){ SB.clearConfig(); connect.url=SB.url; connect.key=SB.key; render(); return; }
+  if(act==="sign-out"){ SB.signOut().then(()=>{ companies=[]; invoices=[]; for(const k in files)delete files[k]; draft=null; genMsg=null; route="dashboard"; render(); }); return; }
+  if(act==="disconnect"){ SB.signOut().then(()=>{ SB.clearConfig(); connect.url=""; connect.key=""; companies=[]; invoices=[]; render(); }); return; }
+  // navigation ("New Document" always starts a clean draft when the current one is saved/locked)
+  const r=e.target.closest("[data-route]"); if(r){ const nr=r.dataset.route; preview=null; ai.proposal=null; if(nr==="new" && draft && (draft.id||isFinalized(draft))){ draft=freshDraft(); ai.instruction=""; ai.error=""; } route=nr; window.scrollTo(0,0); render(); return; }
+  if(!a)return;
+  const id=a.dataset.id;
+  if(act==="co-new"){modal={editing:null};editDraft=emptyCompany();render();}
+  if(act==="co-edit"){const c=companies.find(x=>x.id===id);modal={editing:c};editDraft={...c,bank:{...(c.bank||{})}};render();}
+  if(act==="co-del"){deleteCompany(id);}
+  if(act==="close-modal"){modal=null;editDraft=null;render();}
+  if(act==="save-co"){saveCompany();}
+  if(act==="add-item"){draft.items.push(newLine());render();}
+  if(act==="rm-item"){if(draft.items.length>1)draft.items=draft.items.filter(x=>x.id!==id);render();}
+  // invoice lifecycle
+  if(act==="save-draft"){saveDraft();}
+  if(act==="save-finalize"){finalizeDoc();}
+  if(act==="create-revision"){createRevision();}
+  if(act==="open-doc"){openDoc(id);}
+  if(act==="num-mode"){ draft.numberMode=a.dataset.v; if(draft.numberMode==="manual"&&!draft.number.trim())draft.number=projectedNumber(draft.date); render(); }
+  if(act==="preview-export"){ openPreview(draft); }
+  if(act==="close-preview"){ closePreview(); }
+  if(act==="ai-toggle"){ ai.open=!ai.open; render(); }
+  if(act==="ai-ask"){ askClaude(); }
+  if(act==="ai-apply"){ applyProposal(); }
+  if(act==="ai-cancel"){ ai.proposal=null; render(); }
+  if(act==="doc-upload-pick"){ const el=document.getElementById("doc-upload-input"); if(el)el.click(); }
+  if(act==="src-toggle"){ srcOpen=!srcOpen; render(); }
+  if(act==="ext-toggle"){ extOpen=!extOpen; render(); }
+  if(act==="download-original"){ if(draft&&draft.source&&draft.source.url) window.open(draft.source.url,"_blank"); }
+  if(act==="export-pdf"){ exportPDF(preview?preview.doc:draft); }
+  if(act==="export-docx"){ toast("Preparing DOCX…"); exportDOCX(preview?preview.doc:draft); }
+  if(act==="save-numbering"){ saveNumbering(); }
+  if(act==="lmode"){draft.logoMode=a.dataset.v;render();}
+  if(act==="lsize"){draft.logoSize=a.dataset.v;render();}
+  if(act==="co-logo-pick"){const el=document.getElementById("co-logo-input");if(el)el.click();}
+  if(act==="co-logo-remove"){editDraft.logoKey=null;editDraft.logoPath=null;render();}
+  if(act==="inv-logo-pick"){const el=document.getElementById("inv-logo-input");if(el)el.click();}
+  if(act==="inv-logo-remove"){draft.customLogoKey=null;render();}
+});
+
+document.addEventListener("input",e=>{
+  const cf=e.target.dataset.cfield; if(cf){ connect[cf]=e.target.value; return; }
+  const af=e.target.dataset.afield; if(af){ auth[af]=e.target.value; return; }
+  const sf=e.target.dataset.sfield; if(sf){ if(sf==="nextSeq"){ settings.numbering.nextSeq=Math.max(1,parseInt(e.target.value||"1",10)||1); } else { settings.numbering[sf]=e.target.value; } const pv=document.getElementById("num-preview"); if(pv)pv.textContent=projectedNumber(new Date().toISOString().slice(0,10)); return; }
+  const aif=e.target.dataset.aifield; if(aif){ ai[aif]=e.target.value; return; }
+  const f=e.target.dataset.field;
+  if(f&&draft){ draft[f]=e.target.value; updateLivePreview(); return; }
+  if(e.target.dataset.item){
+    const it=draft.items.find(x=>x.id===e.target.dataset.item);
+    const k=e.target.dataset.k;
+    it[k]= (k==="quantity"||k==="unitPrice") ? (parseFloat(e.target.value)||0) : e.target.value;
+    // live-update amount + total + A4 without full re-render to keep focus
+    if(k==="quantity"||k==="unitPrice"){ patchAmounts(); }
+    updateLivePreview(); return;
+  }
+  const mb=e.target.dataset.mbank;
+  if(mb&&editDraft){ if(!editDraft.bank)editDraft.bank={}; editDraft.bank[mb]=e.target.value; return; }
+  const mf=e.target.dataset.mfield;
+  if(mf&&editDraft){ editDraft[mf]=e.target.value; if(mf==="name"){ const save=document.querySelector('[data-act="save-co"]'); if(save)save.disabled=!editDraft.name.trim()||busy; } }
+});
+document.addEventListener("change",e=>{
+  if(e.target.id==="doc-upload-input"){ const f=e.target.files&&e.target.files[0]; if(f)handleUpload(f); e.target.value=""; return; }
+  if(e.target.id==="co-logo-input"){ const file=e.target.files&&e.target.files[0]; if(!file)return; if(!validLogo(file)){toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true);e.target.value="";return;} toast("Uploading logo…"); uploadLogo(file).then(path=>{ if(editDraft){editDraft.logoPath=path;editDraft.logoKey=path;} render(); }).catch(err=>toast("Logo upload failed: "+err.message,true)); e.target.value=""; return; }
+  if(e.target.id==="inv-logo-input"){ const file=e.target.files&&e.target.files[0]; if(!file)return; if(!validLogo(file)){toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true);e.target.value="";return;} toast("Uploading logo…"); uploadLogo(file).then(path=>{ if(draft){draft.customLogoKey=path;draft.logoMode="custom";} render(); }).catch(err=>toast("Logo upload failed: "+err.message,true)); e.target.value=""; return; }
+  const f=e.target.dataset.field;
+  if(f&&draft&&(f==="sellerId"||f==="buyerId"||f==="currency"||f==="date")){
+    draft[f]=e.target.value||null;
+    if(f==="sellerId"){ const s=companies.find(c=>c.id===draft.sellerId); if(s&&s.currency)draft.currency=s.currency; }
+    render();
+  }
+  const mf=e.target.dataset.mfield; if(mf==="currency"&&editDraft){ editDraft.currency=e.target.value; }
+});
+
+/* drag & drop onto the upload zone */
+document.addEventListener("dragover",e=>{ const dz=e.target.closest&&e.target.closest("#dropzone"); if(dz){ e.preventDefault(); dz.classList.add("drag"); } });
+document.addEventListener("dragleave",e=>{ const dz=e.target.closest&&e.target.closest("#dropzone"); if(dz)dz.classList.remove("drag"); });
+document.addEventListener("drop",e=>{ const dz=e.target.closest&&e.target.closest("#dropzone"); if(dz){ e.preventDefault(); dz.classList.remove("drag"); const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f)handleUpload(f); } });
+
+function patchAmounts(){
+  // update each item line total + subtotal + total strip in place
+  document.querySelectorAll(".item-box").forEach((box,idx)=>{
+    const it=draft.items[idx]; if(!it)return;
+    const amt=box.querySelector(".amount-box"); if(amt)amt.textContent=money(lineTotal(it,draft.currency),draft.currency);
+  });
+  const t=computeTotals(draft.items,draft.currency);
+  const st=document.querySelector(".js-subtotal"); if(st)st.textContent=money(t.subtotal,draft.currency);
+  const strip=document.querySelector(".total-strip .v"); if(strip)strip.textContent=money(t.total,draft.currency);
+}
+function updateLivePreview(){
+  const seller=companies.find(c=>c.id===draft.sellerId)||(draft.seller||null);
+  const buyer=companies.find(c=>c.id===draft.buyerId)||(draft.buyer||null);
+  const host=document.querySelector(".a4-scale"); if(host)host.innerHTML=a4(draft,seller,buyer);
+  refreshFinalize();
+}
+function refreshFinalize(){
+  const canFinalize=!!(draft&&draft.date&&draft.items.some(i=>i.description.trim())&&!busy);
+  document.querySelectorAll('[data-act="save-finalize"]').forEach(b=>{b.disabled=!canFinalize;});
+}
+
+/* ---------------- boot ---------------- */
+(async function init(){
+  // Optional: if the server injected public Supabase config (Railway env vars),
+  // use it automatically on first load. The in-app "Connect Supabase" screen still
+  // works as a fallback, and a user's manually-saved config always takes precedence.
+  try{
+    const cfg = (typeof window!=="undefined") ? window.__DRM_CONFIG__ : null;
+    if(cfg && cfg.url && cfg.anonKey && !SB.configured()){ SB.setConfig(cfg.url, cfg.anonKey); connect.url=SB.url; connect.key=SB.key; }
+  }catch(e){}
+  render(); // connect or login immediately
+  if(SB.configured() && SB.session){
+    appState="loading"; render();
+    try{
+      await SB.ensureFresh();
+      if(!SB.session){ appState="ready"; render(); return; } // session expired -> login
+      await bootData();
+      appState="ready"; render();
+    }catch(err){
+      appState="ready";
+      if(/JWT|401|token|expired/i.test(String(err.message||err))){ SB.saveSession(null); }
+      else { toast("Could not load your data: "+(err.message||err),true); }
+      render();
+    }
+  }
+})();
+</script>
+</body>
+</html>

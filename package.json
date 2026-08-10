@@ -1,0 +1,13 @@
+{
+  "name": "drmonster-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DrMonster AI — commercial invoice studio. Static single-page app (index.html) served by a minimal Node.js server. Data/auth/storage via Supabase; Claude via Supabase Edge Functions.",
+  "scripts": {
+    "build": "node -e \"require('fs').accessSync('index.html'); console.log('static build OK')\"",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

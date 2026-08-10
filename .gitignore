@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# secrets & local env (NEVER commit these)
+.env
+.env.local
+.env.*.local
+.env.production
+
+# OS / editor
+.DS_Store
+.claude/
+
+# editor version snapshots (not needed for deployment)
+versions/
+
+# logs
+npm-debug.log*
+yarn-error.log*
