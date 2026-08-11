@@ -74,6 +74,9 @@ create table if not exists public.documents (
   source_file_name text,
   source_file_type text,
   source_extraction jsonb,                    -- fields Claude read from the uploaded file (for reference)
+  -- contracts (Contract Maker): invoices and contracts share this table
+  document_type    text not null default 'invoice',  -- invoice | contract
+  contract         jsonb,                     -- {ctype, terms{}, clauses[], sig{}} for document_type='contract'
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
@@ -91,6 +94,8 @@ alter table public.documents add column if not exists source_file_path  text;
 alter table public.documents add column if not exists source_file_name  text;
 alter table public.documents add column if not exists source_file_type  text;
 alter table public.documents add column if not exists source_extraction jsonb;
+alter table public.documents add column if not exists document_type text not null default 'invoice';
+alter table public.documents add column if not exists contract      jsonb;
 
 -- -----------------------------------------------------------------------------
 -- APP SETTINGS  (per-user workspace settings, e.g. invoice-number format)

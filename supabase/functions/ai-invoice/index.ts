@@ -69,11 +69,95 @@ const SCHEMA = {
   required: ["intent", "seller_name", "buyer_name", "currency", "items", "shipping_route", "payment_terms", "notes", "needs", "message"],
 };
 
-function userContent(instruction: string, companyNames: string[], currentDraft: unknown) {
+// ---------------- contract mode ----------------
+// Same philosophy: Claude interprets instructions and MAY draft/rewrite contract
+// clause LANGUAGE when asked — but never invents facts. There are still no fields
+// for bank details, addresses, tax numbers, contract numbers, dates or totals.
+const CONTRACT_SYSTEM = `You convert a user's natural-language instruction into structured changes for a commercial-contract editor. You are an interpreter and legal-language drafter, not a source of facts.
+
+Rules:
+- Extract ONLY facts the user states (quantities, prices, terms, party names). Never invent, assume, or guess factual/commercial data: no company identities or addresses, bank details, prices, quantities, shipment facts, contract numbers, dates, or totals. The application supplies verified company data and computes all totals. If a needed fact is missing, add a specific request to "needs" and leave the field null.
+- You MAY write professional contract clause text (e.g. warranty, force majeure) when the user asks you to draft or rewrite a clause — that is language, not fact. Inside clause text, refer to facts using these placeholders instead of literal values: {{SELLER_NAME}} {{BUYER_NAME}} {{TOTAL}} {{CURRENCY}} {{PAYMENT_TERMS}} {{DELIVERY_TERMS}} {{DELIVERY_PERIOD}} {{INCOTERM}} {{WARRANTY_TERMS}} {{CONTRACT_NUMBER}} {{CONTRACT_DATE}}. The application substitutes verified values.
+- contract_type: one of sales, purchase, supply, intl — only when the user indicates it; else null.
+- seller_name / buyer_name: the company name exactly as the user refers to it (the app matches it against its database); else null.
+- items: only when the user states product lines or changes them. For edits, return the FULL updated item list, reusing current values for unchanged parts. quantity/unit_price ONLY from the instruction; null if unstated (and add to "needs").
+- terms: set only the fields the user changes; all others null.
+- clause_ops: add / update / remove operations on clauses, matched by title. "update" replaces the clause body with your drafted text; include the full new body. Use "position" (1-based) only when the user asks to move/insert at a place.
+- intent: "create" for a new contract, "edit" for changes to the current one.
+- "needs": short specific missing facts. "message": one sentence describing what you did.`;
+
+const CONTRACT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    intent: { type: "string", enum: ["create", "edit"] },
+    contract_type: { type: ["string", "null"], enum: ["sales", "purchase", "supply", "intl", null] },
+    seller_name: { type: ["string", "null"] },
+    buyer_name: { type: ["string", "null"] },
+    currency: { type: ["string", "null"] },
+    items: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          description: { type: "string" },
+          model: { type: ["string", "null"] },
+          quantity: { type: ["number", "null"] },
+          unit: { type: ["string", "null"] },
+          unit_price: { type: ["number", "null"] },
+          origin: { type: ["string", "null"] },
+          hs_code: { type: ["string", "null"] },
+        },
+        required: ["description", "model", "quantity", "unit", "unit_price", "origin", "hs_code"],
+      },
+    },
+    terms: {
+      type: ["object", "null"],
+      additionalProperties: false,
+      properties: {
+        payment: { type: ["string", "null"] },
+        delivery: { type: ["string", "null"] },
+        delivery_period: { type: ["string", "null"] },
+        shipping_origin: { type: ["string", "null"] },
+        shipping_destination: { type: ["string", "null"] },
+        shipping_method: { type: ["string", "null"] },
+        incoterm: { type: ["string", "null"] },
+        origin_country: { type: ["string", "null"] },
+        inspection: { type: ["string", "null"] },
+        warranty: { type: ["string", "null"] },
+        packaging: { type: ["string", "null"] },
+        insurance: { type: ["string", "null"] },
+        additional: { type: ["string", "null"] },
+      },
+      required: ["payment", "delivery", "delivery_period", "shipping_origin", "shipping_destination", "shipping_method", "incoterm", "origin_country", "inspection", "warranty", "packaging", "insurance", "additional"],
+    },
+    clause_ops: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          op: { type: "string", enum: ["add", "update", "remove"] },
+          title: { type: "string" },
+          body: { type: ["string", "null"] },
+          position: { type: ["number", "null"] },
+        },
+        required: ["op", "title", "body", "position"],
+      },
+    },
+    needs: { type: "array", items: { type: "string" } },
+    message: { type: "string" },
+  },
+  required: ["intent", "contract_type", "seller_name", "buyer_name", "currency", "items", "terms", "clause_ops", "needs", "message"],
+};
+
+function userContent(instruction: string, companyNames: string[], currentDraft: unknown, mode: string) {
   const names = companyNames.length ? companyNames.map((n) => "- " + n).join("\n") : "(none yet)";
+  const kind = mode === "contract" ? "contract" : "invoice";
   const draftPart = currentDraft
-    ? "Current draft (for edits):\n" + JSON.stringify(currentDraft)
-    : "There is no existing draft; this is a new invoice.";
+    ? `Current ${kind} draft (for edits):\n` + JSON.stringify(currentDraft)
+    : `There is no existing draft; this is a new ${kind}.`;
   return `Instruction:\n${instruction}\n\nKnown companies in the database (match names against these; do not invent others):\n${names}\n\n${draftPart}`;
 }
 
@@ -101,14 +185,15 @@ Deno.serve(async (req: Request) => {
     if (!instruction) return json({ error: "No instruction provided." }, 400);
     const companyNames = Array.isArray(body.companyNames) ? body.companyNames.map(String).slice(0, 300) : [];
     const currentDraft = body.currentDraft || null;
+    const mode = body.mode === "contract" ? "contract" : "invoice";
 
     const anthReq = {
       model: Deno.env.get("ANTHROPIC_MODEL") || "claude-opus-5",
-      max_tokens: 2048,
-      system: SYSTEM,
+      max_tokens: mode === "contract" ? 4096 : 2048,
+      system: mode === "contract" ? CONTRACT_SYSTEM : SYSTEM,
       // effort: low keeps this fast; thinking stays on by default (Opus 5).
-      output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-      messages: [{ role: "user", content: userContent(instruction, companyNames, currentDraft) }],
+      output_config: { effort: "low", format: { type: "json_schema", schema: mode === "contract" ? CONTRACT_SCHEMA : SCHEMA } },
+      messages: [{ role: "user", content: userContent(instruction, companyNames, currentDraft, mode) }],
     };
 
     const r = await fetch("https://api.anthropic.com/v1/messages", {

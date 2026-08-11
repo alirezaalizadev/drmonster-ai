@@ -318,6 +318,31 @@
   .sec-disabled{cursor:default;opacity:.6;background:var(--ink-50)}
   .sec-disabled .sec-ic{background:var(--ink-100);color:var(--ink-400)}
   .sec-soon{color:var(--ink-400)!important}
+
+  /* contract A4 (multi-page: grows beyond 297mm; print paginates) */
+  .a4-contract{height:auto;min-height:297mm}
+  .a4-contract table.items{font-size:10.5px}
+  .a4-contract table.items thead th{font-size:9px;padding:6px 6px}
+  .a4-contract table.items tbody td{padding:7px 6px}
+  .cterms{border:1px solid var(--ink-100);border-radius:6px;overflow:hidden}
+  .cterm-row{display:flex;gap:12px;font-size:11.5px;padding:5px 10px;border-bottom:1px solid var(--ink-100)}
+  .cterm-row:last-child{border-bottom:none}
+  .cterm-row:nth-child(odd){background:var(--ink-50)}
+  .cterm-row .ck{width:170px;flex:none;color:var(--ink-500);font-weight:600}
+  .cterm-row .cv{color:var(--ink-800)}
+  .clauses{margin-top:22px}
+  .clause{margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}
+  .clause-t{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-800);margin-bottom:3px}
+  .clause-b{font-size:11.5px;color:var(--ink-700);line-height:1.6;white-space:pre-wrap}
+  .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;border-top:1px solid var(--ink-200);padding-top:20px;margin-top:28px;page-break-inside:avoid;break-inside:avoid}
+  .sig-line{height:1px;background:var(--ink-300);margin:34px 0 6px;width:85%}
+  .sig-stamp{margin-top:12px;width:120px;height:64px;border:1.5px dashed var(--ink-200);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:var(--ink-300);text-transform:uppercase;letter-spacing:.08em}
+
+  /* contract editor bits */
+  .clause-card{border:1px solid var(--ink-200);background:rgba(246,247,249,.5);border-radius:12px;padding:12px;margin-bottom:10px}
+  .clause-tools{display:flex;gap:4px;align-items:center}
+  .clause-tools .btn{padding:3px 8px;font-size:12px}
+  .row-2c{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 </style>
 </head>
 <body>
@@ -417,7 +442,7 @@ const SOURCE_BUCKET="source-documents";
 function coFromRow(r){ return { id:r.id, name:r.name||"", address:r.address||"", city:r.city||"", country:r.country||"", taxId:r.tax_number||"", registration:r.registration_number||"", phone:r.phone||"", email:r.email||"", website:r.website||"", currency:r.default_currency||"USD", notes:r.notes||"", bank:{ name:r.bank_name||"", address:r.bank_address||"", holder:r.account_holder||"", iban:r.iban||"", account:r.account_number||"", swift:r.swift_bic||"" }, logoPath:r.logo_path||null, logoKey:r.logo_path||null }; }
 function coToRow(c){ return { name:(c.name||"").trim(), address:c.address||null, city:c.city||null, country:c.country||null, tax_number:c.taxId||null, registration_number:c.registration||null, phone:c.phone||null, email:c.email||null, website:c.website||null, default_currency:c.currency||"USD", notes:c.notes||null, bank_name:(c.bank&&c.bank.name)||null, bank_address:(c.bank&&c.bank.address)||null, account_holder:(c.bank&&c.bank.holder)||null, iban:(c.bank&&c.bank.iban)||null, account_number:(c.bank&&c.bank.account)||null, swift_bic:(c.bank&&c.bank.swift)||null, logo_path:c.logoPath||null }; }
 function snapCompany(c){ return c?{ id:c.id, name:c.name, address:c.address, city:c.city, country:c.country, taxId:c.taxId, email:c.email, phone:c.phone, website:c.website, bank:c.bank, logoPath:c.logoPath }:null; }
-function docFromRow(r){ return { id:r.id, number:r.number||"", numberMode:r.number_mode||"auto", date:r.doc_date, currency:r.currency||"USD", sellerId:r.seller_id, buyerId:r.buyer_id, seller:r.seller_snapshot||null, buyer:r.buyer_snapshot||null, items:(r.items||[]).map(it=>({id:it.id||uid("li"),description:it.description||"",quantity:isFinite(it.quantity)?it.quantity:0,unit:it.unit||"",unitPrice:isFinite(it.unitPrice)?it.unitPrice:0})), shippingRoute:r.shipping_route||"", paymentTerms:r.payment_terms||"", notes:r.notes||"", logoMode:r.logo_mode||"auto", logoSize:r.logo_size||"medium", customLogoKey:r.custom_logo_path||null, status:r.status||"draft", subtotal:r.subtotal||0, total:r.total||0, revision:r.revision||1, revisionOf:r.revision_of||null, finalizedAt:r.finalized_at||null, source: r.source_file_path?{ path:r.source_file_path, name:r.source_file_name||"document", type:r.source_file_type||"pdf", extraction:r.source_extraction||{}, url:null, textPreview:null }:null }; }
+function docFromRow(r){ return { id:r.id, docType:r.document_type||"invoice", contract:r.contract||null, number:r.number||"", numberMode:r.number_mode||"auto", date:r.doc_date, currency:r.currency||"USD", sellerId:r.seller_id, buyerId:r.buyer_id, seller:r.seller_snapshot||null, buyer:r.buyer_snapshot||null, items:(r.items||[]).map(it=>({id:it.id||uid("li"),description:it.description||"",quantity:isFinite(it.quantity)?it.quantity:0,unit:it.unit||"",unitPrice:isFinite(it.unitPrice)?it.unitPrice:0,model:it.model||"",origin:it.origin||"",hsCode:it.hsCode||""})), shippingRoute:r.shipping_route||"", paymentTerms:r.payment_terms||"", notes:r.notes||"", logoMode:r.logo_mode||"auto", logoSize:r.logo_size||"medium", customLogoKey:r.custom_logo_path||null, status:r.status||"draft", subtotal:r.subtotal||0, total:r.total||0, revision:r.revision||1, revisionOf:r.revision_of||null, finalizedAt:r.finalized_at||null, source: r.source_file_path?{ path:r.source_file_path, name:r.source_file_name||"document", type:r.source_file_type||"pdf", extraction:r.source_extraction||{}, url:null, textPreview:null }:null }; }
 // Legacy docs saved with status 'generated' are treated as finalized.
 function isFinalized(d){ return d && (d.status==="finalized"||d.status==="generated"); }
 
@@ -509,11 +534,65 @@ let delDoc=null, delBusy=false;   // document-deletion confirmation state
 
 function toast(msg,isErr){ let host=document.getElementById("toast"); if(!host){host=document.createElement("div");host.id="toast";document.body.appendChild(host);} const el=document.createElement("div"); el.className="toast"+(isErr?" err":""); el.textContent=msg; host.appendChild(el); setTimeout(()=>{el.style.opacity="0";el.style.transition="opacity .3s";setTimeout(()=>el.remove(),300);}, isErr?5200:3200); }
 
-function newLine(){return {id:uid("li"),description:"",quantity:1,unit:"",unitPrice:0};}
+function newLine(){return {id:uid("li"),description:"",quantity:1,unit:"",unitPrice:0,model:"",origin:"",hsCode:""};}
 function freshDraft(){
   const date=new Date().toISOString().slice(0,10);
-  return {id:null,status:"draft",revision:1,revisionOf:null,finalizedAt:null,numberMode:"auto",sellerId:null,buyerId:null,number:projectedNumber(date),date,currency:"USD",items:[newLine()],shippingRoute:"",paymentTerms:"",notes:"",logoMode:"auto",logoSize:"medium",customLogoKey:null,source:null};
+  return {id:null,docType:"invoice",status:"draft",revision:1,revisionOf:null,finalizedAt:null,numberMode:"auto",sellerId:null,buyerId:null,number:projectedNumber(date),date,currency:"USD",items:[newLine()],shippingRoute:"",paymentTerms:"",notes:"",logoMode:"auto",logoSize:"medium",customLogoKey:null,source:null,contract:null};
 }
+
+/* ---------------- Contract Maker: clause library, types, drafts ---------------- */
+// Clause bodies use {{TOKENS}} that the app substitutes with VERIFIED data at render
+// time — facts always come from the database / user input, never from prose.
+const CLAUSE_LIB={
+  parties:{t:"Parties",b:"This Contract is entered into between {{SELLER_NAME}}, having its registered office at {{SELLER_ADDRESS}} (hereinafter the “Seller”), and {{BUYER_NAME}}, having its registered office at {{BUYER_ADDRESS}} (hereinafter the “Buyer”), together referred to as the “Parties”."},
+  subject:{t:"Subject of Contract",b:"The Seller agrees to sell and deliver, and the Buyer agrees to purchase and accept, the goods specified in this Contract (the “Goods”) under the terms and conditions set out herein."},
+  goods:{t:"Goods / Products",b:"The Goods, their specifications, quantities and unit prices are set out in the product table of this Contract, which forms an integral part hereof. Summary: {{GOODS_SUMMARY}}."},
+  value:{t:"Contract Value",b:"The total value of this Contract is {{TOTAL}}. Unless expressly stated otherwise, prices are fixed for the duration of this Contract and are not subject to revision."},
+  payment:{t:"Payment Terms",b:"Payment shall be made as follows: {{PAYMENT_TERMS}}. All bank charges outside the Seller's bank shall be borne by the Buyer."},
+  delivery:{t:"Delivery",b:"Delivery shall be made {{INCOTERM}} from {{SHIPPING_ORIGIN}} to {{SHIPPING_DESTINATION}} by {{SHIPPING_METHOD}}. Delivery terms: {{DELIVERY_TERMS}}. Delivery period: {{DELIVERY_PERIOD}}."},
+  packaging:{t:"Packaging",b:"The Goods shall be packed in export-standard packaging suitable for the agreed mode of transport and sufficient to protect the Goods during carriage and handling. Packaging terms: {{PACKAGING_TERMS}}."},
+  insurance:{t:"Insurance",b:"Insurance of the Goods shall be arranged in accordance with the agreed Incoterm ({{INCOTERM}}) and the following terms: {{INSURANCE_TERMS}}."},
+  inspection:{t:"Inspection",b:"Inspection of the Goods shall be carried out as follows: {{INSPECTION_TERMS}}. Inspection shall not relieve the Seller of its obligations under this Contract."},
+  warranty:{t:"Warranty",b:"The Seller warrants that the Goods conform to the agreed specifications and are free from defects in material and workmanship. Warranty terms: {{WARRANTY_TERMS}}."},
+  force:{t:"Force Majeure",b:"Neither Party shall be liable for failure or delay in performing its obligations under this Contract caused by circumstances beyond its reasonable control, including but not limited to acts of God, war, embargo, fire, flood, strikes or governmental action, provided the affected Party notifies the other Party without undue delay and resumes performance as soon as reasonably possible."},
+  liability:{t:"Liability",b:"Neither Party shall be liable for indirect or consequential losses. The total aggregate liability of either Party under this Contract shall not exceed the total Contract value stated herein, except in cases of wilful misconduct or gross negligence."},
+  law:{t:"Governing Law",b:"This Contract shall be governed by and construed in accordance with the substantive law agreed between the Parties, without regard to its conflict-of-law rules."},
+  disputes:{t:"Dispute Resolution",b:"The Parties shall first seek to resolve any dispute arising out of or in connection with this Contract amicably. Failing amicable settlement within thirty (30) days, the dispute shall be submitted to the competent courts or arbitral body agreed between the Parties."},
+  arbitration:{t:"Arbitration",b:"Any dispute arising out of or in connection with this Contract which cannot be settled amicably shall be finally settled by arbitration under the rules agreed between the Parties. The language of arbitration shall be English, and the award shall be final and binding on both Parties."},
+  confidentiality:{t:"Confidentiality",b:"Each Party shall keep confidential all commercial and technical information received from the other Party in connection with this Contract and shall not disclose it to third parties without prior written consent, except as required by law."},
+  termination:{t:"Termination",b:"Either Party may terminate this Contract by written notice if the other Party commits a material breach and fails to remedy it within thirty (30) days of written notice. Termination shall not affect accrued rights and obligations."},
+  misc:{t:"Miscellaneous",b:"This Contract constitutes the entire agreement between the Parties regarding its subject matter and supersedes all prior negotiations and understandings. Amendments are valid only if made in writing and signed by both Parties. If any provision is held invalid, the remaining provisions remain in full force."},
+};
+const CONTRACT_TYPES=[
+  {id:"sales", label:"Sales Contract", clauses:["parties","subject","goods","value","payment","delivery","packaging","inspection","warranty","force","liability","law","disputes","termination","misc"]},
+  {id:"purchase", label:"Purchase Contract", clauses:["parties","subject","goods","value","payment","delivery","inspection","warranty","force","liability","law","disputes","termination","misc"]},
+  {id:"supply", label:"Commercial Supply Agreement", clauses:["parties","subject","goods","value","payment","delivery","packaging","inspection","warranty","force","liability","confidentiality","law","disputes","termination","misc"]},
+  {id:"intl", label:"International Sales Agreement", clauses:["parties","subject","goods","value","payment","delivery","packaging","insurance","inspection","warranty","force","liability","confidentiality","law","arbitration","termination","misc"]},
+];
+function ctypeLabel(id){ const t=CONTRACT_TYPES.find(x=>x.id===id); return t?t.label:"Contract"; }
+function defaultClauses(ctypeId){ const t=CONTRACT_TYPES.find(x=>x.id===ctypeId)||CONTRACT_TYPES[0]; return t.clauses.map(k=>({id:uid("cl"),title:CLAUSE_LIB[k].t,body:CLAUSE_LIB[k].b})); }
+function emptyTerms(){ return {payment:"",delivery:"",deliveryPeriod:"",shipOrigin:"",shipDest:"",shipMethod:"",incoterm:"",originCountry:"",inspection:"",warranty:"",packaging:"",insurance:"",additional:""}; }
+function freshContractDraft(ctypeId){
+  const d=freshDraft();
+  d.docType="contract";
+  d.contract={ ctype:ctypeId||"sales", terms:emptyTerms(), clauses:defaultClauses(ctypeId||"sales"), sig:{sellerRep:"",sellerTitle:"",buyerRep:"",buyerTitle:""}, custom:false };
+  return d;
+}
+// Substitute {{TOKENS}} in clause text with verified application data.
+function clauseCtx(d,seller,buyer){
+  const t=(d.contract&&d.contract.terms)||emptyTerms();
+  const total=computeTotals(d.items,d.currency).total;
+  const goods=d.items.filter(i=>i.description.trim()).map(i=>`${i.quantity||0} ${i.unit||"pcs"} ${i.description}`).join("; ");
+  const co=c=>c?[c.address,c.city,c.country].filter(Boolean).join(", "):"";
+  return {
+    SELLER_NAME:seller?seller.name:"", SELLER_ADDRESS:co(seller), BUYER_NAME:buyer?buyer.name:"", BUYER_ADDRESS:co(buyer),
+    TOTAL:money(total,d.currency)+" ("+d.currency+")", CURRENCY:d.currency, CONTRACT_NUMBER:d.number||"", CONTRACT_DATE:fdate(d.date),
+    GOODS_SUMMARY:goods, PAYMENT_TERMS:t.payment, DELIVERY_TERMS:t.delivery, DELIVERY_PERIOD:t.deliveryPeriod,
+    SHIPPING_ORIGIN:t.shipOrigin, SHIPPING_DESTINATION:t.shipDest, SHIPPING_METHOD:t.shipMethod, INCOTERM:t.incoterm,
+    ORIGIN_COUNTRY:t.originCountry, INSPECTION_TERMS:t.inspection, WARRANTY_TERMS:t.warranty, PACKAGING_TERMS:t.packaging, INSURANCE_TERMS:t.insurance,
+  };
+}
+function fillClause(text,ctx){ return String(text||"").replace(/\{\{([A-Z_]+)\}\}/g,(m,k)=> (ctx[k]&&String(ctx[k]).trim()) ? String(ctx[k]) : "—"); }
 
 /* ---------------- render ---------------- */
 function renderNav(){
@@ -648,9 +727,72 @@ function a4(inv,seller,buyer){
   </div>`;
 }
 
+/* ---- Contract A4 ---- */
+function contractA4(d,seller,buyer){
+  const c=d.contract||{ctype:"sales",terms:emptyTerms(),clauses:[],sig:{}};
+  const ctx=clauseCtx(d,seller,buyer);
+  const t=computeTotals(d.items,d.currency);
+  const items=d.items.filter(i=>i.description.trim());
+  const terms=c.terms||emptyTerms();
+  const termRows=[["Total contract value",money(t.total,d.currency)+" ("+d.currency+")"],["Payment terms",terms.payment],["Delivery terms",terms.delivery],["Delivery period",terms.deliveryPeriod],["Shipping origin",terms.shipOrigin],["Shipping destination",terms.shipDest],["Shipping method",terms.shipMethod],["Incoterm",terms.incoterm],["Country of origin",terms.originCountry],["Inspection",terms.inspection],["Warranty",terms.warranty],["Packaging",terms.packaging],["Insurance",terms.insurance],["Additional terms",terms.additional]].filter(r=>r[1]&&String(r[1]).trim());
+  const party=(role,co)=> co?`<div class="party"><div class="role">${role}</div><div class="cn">${esc(co.name)}</div>
+    ${co.address?`<div class="ln">${esc(co.address)}</div>`:""}
+    ${(co.city||co.country)?`<div class="ln">${esc([co.city,co.country].filter(Boolean).join(", "))}</div>`:""}
+    ${co.taxId?`<div class="ln">Tax / VAT: ${esc(co.taxId)}</div>`:""}
+    ${co.registration?`<div class="ln">Reg. no: ${esc(co.registration)}</div>`:""}
+    ${co.email?`<div class="ln">${esc(co.email)}</div>`:""}</div>`
+    :`<div class="party"><div class="role">${role}</div><div class="empty">Not selected</div></div>`;
+  const revBadge=d.revision>1?`<div class="meta" style="color:var(--amber-700)">Revision ${d.revision}</div>`:"";
+  const sigBlock=(role,co,rep,title)=>`<div class="sig-block">
+    <div class="role" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--brand-700);margin-bottom:6px">${role}</div>
+    <div style="font-size:12.5px;font-weight:600">${co?esc(co.name):"—"}</div>
+    <div style="font-size:11px;color:var(--ink-500);margin-top:2px">Authorized representative</div>
+    <div style="font-size:12px;margin-top:2px">${rep?esc(rep):'<span style="color:var(--ink-300)">Name / Title</span>'}${title?`<span style="color:var(--ink-500)"> — ${esc(title)}</span>`:""}</div>
+    <div class="sig-line"></div><div style="font-size:10.5px;color:var(--ink-500)">Signature</div>
+    <div class="sig-stamp">Company stamp</div>
+  </div>`;
+  return `<div class="a4 a4-contract">
+    <div class="hd">
+      <div style="min-height:44px;display:flex;align-items:center">${letterhead(d,seller)}</div>
+      <div><div class="title">${esc(ctypeLabel(c.ctype))}</div><div class="meta"><b>${esc(d.number||"—")}</b></div><div class="meta">Date: ${fdate(d.date)}</div>${revBadge}</div>
+    </div>
+    <div class="parties">${party("Seller",seller)}${party("Buyer",buyer)}</div>
+    ${items.length?`<table class="items"><thead><tr><th>Description</th><th>Model / Spec</th><th class="num">Qty</th><th>Unit</th><th class="num">Unit price</th><th class="num">Line total</th><th>Origin</th><th>HS/CN</th></tr></thead>
+    <tbody>${items.map(it=>`<tr><td>${esc(it.description)}</td><td>${it.model?esc(it.model):'<span style="color:var(--ink-300)">—</span>'}</td><td class="num">${esc(String(it.quantity||0))}</td><td>${it.unit?esc(it.unit):"—"}</td><td class="num">${money(it.unitPrice||0,d.currency)}</td><td class="num" style="font-weight:500">${money(lineTotal(it,d.currency),d.currency)}</td><td>${it.origin?esc(it.origin):"—"}</td><td>${it.hsCode?esc(it.hsCode):"—"}</td></tr>`).join("")}</tbody></table>
+    <div class="totbox"><div class="w"><div class="grand"><span class="k">Total contract value (${d.currency})</span><span class="v">${money(t.total,d.currency)}</span></div></div></div>`
+    :`<div style="font-size:12.5px;font-style:italic;color:var(--ink-400);padding:8px 0">No products added yet.</div>`}
+    ${termRows.length?`<div style="margin-top:20px"><div class="k" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-500);margin-bottom:6px">Commercial terms</div>
+      <div class="cterms">${termRows.map(r=>`<div class="cterm-row"><span class="ck">${esc(r[0])}</span><span class="cv">${esc(String(r[1]))}</span></div>`).join("")}</div></div>`:""}
+    <div class="clauses">${(c.clauses||[]).map((cl,i)=>`<div class="clause"><div class="clause-t">${i+1}. ${esc(cl.title)}</div><div class="clause-b">${esc(fillClause(cl.body,ctx))}</div></div>`).join("")}</div>
+    ${bankBlock(seller)}
+    <div class="sig-grid">${sigBlock("Seller",seller,c.sig&&c.sig.sellerRep,c.sig&&c.sig.sellerTitle)}${sigBlock("Buyer",buyer,c.sig&&c.sig.buyerRep,c.sig&&c.sig.buyerTitle)}</div>
+    <div class="foot" style="margin-top:24px"><div class="note">This contract was prepared via DrMonster AI. Facts and figures are supplied by the parties.</div></div>
+  </div>`;
+}
+// Dispatch: render the right A4 for a document.
+function renderDocA4(d,seller,buyer){ return d&&d.docType==="contract" ? contractA4(d,seller,buyer) : a4(d,seller,buyer); }
+
 /* ---- New Invoice ---- */
+/* Shared AI assistant card (invoice + contract editors). */
+function aiCard(subtitle,placeholder){
+  return `<div class="ai-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="ai-badge">AI</span><div><div style="font-weight:600;font-size:14px">Assistant</div><div style="font-size:12px;color:var(--ink-500)">${esc(subtitle)}</div></div></div>
+          <button type="button" class="btn btn-ghost" style="padding:4px 10px;font-size:12px" data-act="ai-toggle">${ai.open?"Hide":"Show"}</button>
+        </div>
+        ${ai.open?`<div style="margin-top:12px">
+          <textarea class="inp" rows="3" data-aifield="instruction" placeholder="${esc(placeholder)}">${esc(ai.instruction)}</textarea>
+          ${ai.error?`<div class="auth-err" style="margin:10px 0 0">${esc(ai.error)}</div>`:""}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px">
+            <div style="font-size:11px;color:var(--ink-400);flex:1">Claude proposes changes; you review before applying. It never sets bank details, tax numbers, document numbers, dates or totals.</div>
+            <button class="btn btn-primary" style="white-space:nowrap" data-act="ai-ask" ${ai.busy?'disabled':''}>${ai.busy?"Asking Claude…":"Ask Claude"}</button>
+          </div>
+        </div>`:""}
+      </div>`;
+}
+
 function viewNew(){
-  if(!draft)draft=freshDraft();
+  if(!draft||draft.docType==="contract")draft=freshDraft();
   const seller=companies.find(c=>c.id===draft.sellerId)||(draft.seller||null);
   const buyer=companies.find(c=>c.id===draft.buyerId)||(draft.buyer||null);
   const finalized=isFinalized(draft);
@@ -687,20 +829,7 @@ function viewNew(){
   `<div class="split">
     <div class="form-col"><div class="form-inner">
       ${revBanner}
-      <div class="ai-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div style="display:flex;align-items:center;gap:10px"><span class="ai-badge">AI</span><div><div style="font-weight:600;font-size:14px">Assistant</div><div style="font-size:12px;color:var(--ink-500)">Describe the invoice or a change in plain language.</div></div></div>
-          <button type="button" class="btn btn-ghost" style="padding:4px 10px;font-size:12px" data-act="ai-toggle">${ai.open?"Hide":"Show"}</button>
-        </div>
-        ${ai.open?`<div style="margin-top:12px">
-          <textarea class="inp" rows="3" data-aifield="instruction" placeholder="e.g. Make an invoice from Thai Textile to Karoglu for 20 automatic yarn winding machines at $2,500 each, shipping from Thailand to Istanbul.">${esc(ai.instruction)}</textarea>
-          ${ai.error?`<div class="auth-err" style="margin:10px 0 0">${esc(ai.error)}</div>`:""}
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px">
-            <div style="font-size:11px;color:var(--ink-400);flex:1">Claude proposes fields; you review before applying. It never sets bank details, tax numbers, invoice numbers or totals.</div>
-            <button class="btn btn-primary" style="white-space:nowrap" data-act="ai-ask" ${ai.busy?'disabled':''}>${ai.busy?"Asking Claude…":"Ask Claude"}</button>
-          </div>
-        </div>`:""}
-      </div>
+      ${aiCard("Describe the invoice or a change in plain language.","e.g. Make an invoice from Thai Textile to Karoglu for 20 automatic yarn winding machines at $2,500 each, shipping from Thailand to Istanbul.")}
       ${sourcePanel()}
       <section>${sh("01","Parties","Choose the seller and buyer for this invoice.")}
         <div style="display:flex;flex-direction:column;gap:16px">
@@ -776,13 +905,137 @@ function viewNew(){
   </div>`;
 }
 
+/* ---- Contract Maker ---- */
+function viewContract(){
+  if(!draft||draft.docType!=="contract")draft=freshContractDraft();
+  const c=draft.contract;
+  const seller=companies.find(x=>x.id===draft.sellerId)||(draft.seller||null);
+  const buyer=companies.find(x=>x.id===draft.buyerId)||(draft.buyer||null);
+  const coOpts=(sel)=>companies.map(x=>`<option value="${x.id}" ${sel===x.id?'selected':''}>${esc(x.name)}${x.country?' · '+esc(x.country):''}</option>`).join("");
+  const sh=(idx,t,d)=>`<div class="sec-head"><span class="sec-idx">${idx}</span><div><h3>${t}</h3><p>${d}</p></div></div>`;
+
+  if(isFinalized(draft)){
+    const action=`<div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" data-act="export-pdf">${svg('print')}Export PDF</button>
+      <button class="btn btn-secondary" data-act="export-docx">Export DOCX</button>
+      <button class="btn btn-primary" data-act="create-revision">${svg('editdoc')}Create revision</button></div>`;
+    return topbar("Contract "+esc(draft.number),"Finalized "+(draft.revision>1?("· revision "+draft.revision+" "):"")+"· locked from silent edits.",["Document Maker","Documents","Contract"],action)+
+    `<div class="container">
+      <div class="lockbar" style="margin-bottom:20px"><div class="msg">🔒 This contract is finalized. To change anything, create a revision — it is saved as a new linked document and the original stays intact.</div>
+        <button class="btn btn-primary" data-act="create-revision" style="white-space:nowrap">Create revision</button></div>
+      <div class="card" style="padding:24px;display:flex;justify-content:center;overflow:auto"><div class="a4-scale">${contractA4(draft,seller,buyer)}</div></div>
+    </div>`;
+  }
+
+  if(draft.numberMode==="auto"){ draft.number=projectedNumber(draft.date); }
+  const numAuto=draft.numberMode==="auto";
+  const canFinalize=!!(draft.date && draft.items.some(i=>i.description.trim()));
+  const t=computeTotals(draft.items,draft.currency);
+  const terms=c.terms||emptyTerms();
+  const action=`<div style="display:flex;gap:8px">
+    <button class="btn btn-secondary" data-act="preview-export">${svg('print')}Preview &amp; export</button>
+    <button class="btn btn-secondary" data-act="save-draft" ${busy?'disabled':''}>${draft.id?"Update draft":"Save draft"}</button>
+    <button class="btn btn-primary" data-act="save-finalize" ${canFinalize&&!busy?'':'disabled'}>${svg('check')}Finalize contract</button></div>`;
+  const revBanner=draft.revision>1?`<div class="lockbar" style="margin:0 0 4px"><div class="msg">✏️ Revision ${draft.revision} — a new document linked to the original. Finalizing saves it separately; the original stays intact.</div></div>`:"";
+  const termIn=(label,key,ph)=>`<div><label class="lbl">${label}</label><input class="inp" data-term="${key}" value="${esc(terms[key]||"")}" placeholder="${esc(ph||"")}"></div>`;
+  return topbar(draft.id?(draft.revision>1?("Revision "+draft.revision):"Edit contract"):"New Contract","Build the contract on the left — the A4 document updates live. All values and totals are computed by the app.",["Document Maker","Contract Maker"],action)+
+  `<div class="split">
+    <div class="form-col"><div class="form-inner">
+      ${revBanner}
+      ${aiCard("Describe the contract or a change in plain language.","e.g. Create a sales contract between Thai Textile and Karoglu for 20 machines at 2,500 USD each · Add a 12-month warranty clause · Rewrite the force majeure clause professionally.")}
+      <section>${sh("01","Contract","Type, number, date and currency — generator-controlled.")}
+        <div><label class="lbl">Contract type</label><select class="inp" data-cfg="ctype">${CONTRACT_TYPES.map(x=>`<option value="${x.id}" ${c.ctype===x.id?'selected':''}>${x.label}</option>`).join("")}</select>
+        <div style="font-size:12px;color:var(--ink-400);margin-top:6px">${c.custom?"Clauses have been customized — changing the type keeps your clauses.":"Each type loads its own default clause template. You can edit every clause below."}</div></div>
+        <div class="mt4"><label class="lbl">Contract number</label>
+          <div style="display:flex;gap:8px">
+            <input class="inp" data-field="number" value="${esc(draft.number)}" ${numAuto?'readonly':''} style="${numAuto?'background:var(--ink-50);color:var(--ink-500)':''}">
+            <button type="button" class="seg ${numAuto?'seg-on':''}" data-act="num-mode" data-v="auto" style="padding:8px 14px">Auto</button>
+            <button type="button" class="seg ${!numAuto?'seg-on':''}" data-act="num-mode" data-v="manual" style="padding:8px 14px">Manual</button>
+          </div></div>
+        <div class="row-2 mt4"><div><label class="lbl">Contract date</label><input class="inp" type="date" data-field="date" value="${esc(draft.date)}"></div>
+        <div><label class="lbl">Currency</label><select class="inp" data-field="currency">${CUR_LIST.map(([cc,l])=>`<option value="${cc}" ${draft.currency===cc?'selected':''}>${cc} — ${l}</option>`).join("")}</select></div></div>
+      </section>
+      <section>${sh("02","Parties","Company details load automatically from your Companies database.")}
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><label class="lbl">Seller</label><select class="inp" data-field="sellerId"><option value="">Select seller company</option>${coOpts(draft.sellerId)}</select></div>
+          <div><label class="lbl">Buyer</label><select class="inp" data-field="buyerId"><option value="">Select buyer company</option>${coOpts(draft.buyerId)}</select></div>
+        </div></section>
+      <section>${sh("03","Products","Line totals and the contract value are calculated automatically.")}
+        <datalist id="units">${["pcs","set","box","kg","g","ton","m","m²","m³","L","hrs","day","service"].map(u=>`<option value="${u}">`).join("")}</datalist>
+        <div style="display:flex;flex-direction:column;gap:12px">
+        ${draft.items.map((it,idx)=>`<div class="item-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-400)">Product ${idx+1}</span>
+          <div class="clause-tools"><button type="button" class="btn btn-ghost" title="Duplicate" data-act="dup-item" data-id="${it.id}">⧉</button>${draft.items.length>1?`<button type="button" class="btn btn-ghost" title="Remove" data-act="rm-item" data-id="${it.id}">${svg('trash')}</button>`:""}</div></div>
+          <label class="lbl">Product description</label><textarea class="inp" rows="2" data-item="${it.id}" data-k="description" placeholder="e.g. Automatic yarn winding machine">${esc(it.description)}</textarea>
+          <div class="row-2c mt4">
+            <div><label class="lbl">Model / specification</label><input class="inp" data-item="${it.id}" data-k="model" value="${esc(it.model||"")}" placeholder="Model YW-9"></div>
+            <div><label class="lbl">Country of origin</label><input class="inp" data-item="${it.id}" data-k="origin" value="${esc(it.origin||"")}" placeholder="Thailand"></div>
+          </div>
+          <div class="row-4 mt4">
+            <div><label class="lbl">Quantity</label><input class="inp" type="number" min="0" step="any" data-item="${it.id}" data-k="quantity" value="${it.quantity}"></div>
+            <div><label class="lbl">Unit</label><input class="inp" list="units" data-item="${it.id}" data-k="unit" value="${esc(it.unit||"")}" placeholder="pcs"></div>
+            <div><label class="lbl">Unit price</label><input class="inp" type="number" min="0" step="any" data-item="${it.id}" data-k="unitPrice" value="${it.unitPrice}"></div>
+            <div><label class="lbl">Line total</label><div class="amount-box">${money(lineTotal(it,draft.currency),draft.currency)}</div></div>
+          </div>
+          <div class="mt4"><label class="lbl">HS / CN code (optional)</label><input class="inp" data-item="${it.id}" data-k="hsCode" value="${esc(it.hsCode||"")}" placeholder="8445.40"></div>
+        </div>`).join("")}
+        <button class="btn btn-secondary dashed" style="width:100%" data-act="add-item">${svg('plus')}Add product</button>
+        </div>
+        <div class="total-strip"><span class="k">Total contract value (${draft.currency})</span><span class="v">${money(t.total,draft.currency)}</span></div>
+      </section>
+      <section>${sh("04","Commercial terms","Shown in the contract's terms table and used inside clauses.")}
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="row-2c">${termIn("Payment terms","payment","30% advance, 70% before shipment")}${termIn("Delivery terms","delivery","Per agreed schedule")}</div>
+          <div class="row-2c">${termIn("Delivery period / date","deliveryPeriod","Within 45 days of advance payment")}${termIn("Incoterm","incoterm","CIF Istanbul (Incoterms 2020)")}</div>
+          <div class="row-2c">${termIn("Shipping origin","shipOrigin","Bangkok, Thailand")}${termIn("Shipping destination","shipDest","Istanbul, Türkiye")}</div>
+          <div class="row-2c">${termIn("Shipping method","shipMethod","Sea freight, FCL")}${termIn("Country of origin","originCountry","Thailand")}</div>
+          <div class="row-2c">${termIn("Inspection terms","inspection","Pre-shipment inspection by buyer")}${termIn("Warranty terms","warranty","12 months from delivery")}</div>
+          <div class="row-2c">${termIn("Packaging terms","packaging","Export-standard wooden crates")}${termIn("Insurance terms","insurance","110% of contract value, all risks")}</div>
+          <div><label class="lbl">Additional terms</label><textarea class="inp" rows="2" data-term="additional" placeholder="Any other agreed terms.">${esc(terms.additional||"")}</textarea></div>
+        </div></section>
+      <section>${sh("05","Clauses","Edit, add, remove or reorder — {{TOKENS}} are filled with verified data in the preview.")}
+        ${(c.clauses||[]).map((cl,i)=>`<div class="clause-card">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:700;color:var(--ink-400);flex:none">${i+1}.</span>
+            <input class="inp" style="font-weight:600" data-clause="${cl.id}" data-ck="title" value="${esc(cl.title)}">
+            <div class="clause-tools">
+              <button type="button" class="btn btn-ghost" title="Move up" data-act="cl-up" data-id="${cl.id}" ${i===0?'disabled':''}>↑</button>
+              <button type="button" class="btn btn-ghost" title="Move down" data-act="cl-down" data-id="${cl.id}" ${i===(c.clauses.length-1)?'disabled':''}>↓</button>
+              <button type="button" class="btn btn-ghost" title="Remove clause" data-act="rm-clause" data-id="${cl.id}">${svg('trash')}</button>
+            </div>
+          </div>
+          <textarea class="inp" rows="3" data-clause="${cl.id}" data-ck="body">${esc(cl.body)}</textarea>
+        </div>`).join("")}
+        <button class="btn btn-secondary dashed" style="width:100%" data-act="add-clause">${svg('plus')}Add clause</button>
+      </section>
+      <section>${sh("06","Signatures","Signature and stamp areas print at the end — no signatures are generated.")}
+        <div class="row-2c">
+          <div><label class="lbl">Seller representative (name)</label><input class="inp" data-sig="sellerRep" value="${esc(c.sig.sellerRep||"")}" placeholder="Full name"></div>
+          <div><label class="lbl">Seller representative (title)</label><input class="inp" data-sig="sellerTitle" value="${esc(c.sig.sellerTitle||"")}" placeholder="Managing Director"></div>
+        </div>
+        <div class="row-2c mt4">
+          <div><label class="lbl">Buyer representative (name)</label><input class="inp" data-sig="buyerRep" value="${esc(c.sig.buyerRep||"")}" placeholder="Full name"></div>
+          <div><label class="lbl">Buyer representative (title)</label><input class="inp" data-sig="buyerTitle" value="${esc(c.sig.buyerTitle||"")}" placeholder="Purchasing Manager"></div>
+        </div>
+      </section>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1" data-act="save-draft" ${busy?'disabled':''}>${draft.id?"Update draft":"Save draft"}</button>
+        <button class="btn btn-primary" style="flex:1.4" data-act="save-finalize" ${canFinalize&&!busy?'':'disabled'}>${svg('check')}Finalize contract</button>
+      </div>
+      <button class="btn btn-secondary dashed" style="width:100%;margin-top:8px" data-act="preview-export">${svg('print')}Preview &amp; export (PDF / DOCX)</button>
+    </div></div>
+    <div class="preview-col"><div class="preview-bar"><span class="lp">Live preview · A4 · multi-page</span><span class="chip chip-white">${esc(ctypeLabel(c.ctype))}</span></div>
+      <div class="preview-canvas"><div class="a4-scale">${contractA4(draft,seller,buyer)}</div></div></div>
+  </div>`;
+}
+
 /* ---- Documents ---- */
 function viewDocuments(){
   const action=`<div style="display:flex;gap:8px"><button class="btn btn-secondary" data-route="edit">${svg('editdoc')}Import / edit</button><button class="btn btn-primary" data-route="new">${svg('plus')}New Invoice</button></div>`;
   let body;
   if(!invoices.length){body=`<div class="card empty-state"><div class="ic">${svg('docs')}</div><h3 style="margin:16px 0 0">No documents yet</h3><p style="color:var(--ink-500)">Generate your first invoice to see it here.</p></div>`;}
   else body=`<div class="card" style="overflow:hidden"><table><thead><tr><th>Invoice</th><th>Seller</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th class="num">Status</th><th></th></tr></thead>
-    <tbody>${invoices.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number)}${i.revision>1?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num">${statusChip(i.status)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">${isFinalized(i)?"View":"Edit"} ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
+    <tbody>${invoices.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number)}${i.docType==="contract"?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">Contract</span>`:""}${i.revision>1?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num">${statusChip(i.status)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">${isFinalized(i)?"View":"Edit"} ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
   return topbar("Documents","Every invoice you've created in this workspace. Drafts can be edited; finalized invoices open locked.",["Library","Documents"],action)+`<div class="container">${body}</div>`;
 }
 
@@ -923,7 +1176,7 @@ function viewEdit(){
   let list;
   if(!drafts.length){ list=`<div class="card empty-state" style="padding:40px 24px"><div class="ic">${svg('editdoc')}</div><h3 style="margin:16px 0 0">No drafts yet</h3><p style="color:var(--ink-500);max-width:380px">Upload a document above, or resume drafts here. Finalized invoices open locked from the Documents library.</p></div>`; }
   else list=`<div class="card" style="overflow:hidden;margin-top:24px"><div style="padding:14px 16px;border-bottom:1px solid var(--ink-100);font-size:13px;font-weight:600">Your drafts</div><table><thead><tr><th>Draft</th><th>Seller</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th></th></tr></thead>
-    <tbody>${drafts.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number||"—")}${i.revision>1?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}${i.source?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">from upload</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">Edit ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
+    <tbody>${drafts.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number||"—")}${i.docType==="contract"?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">Contract</span>`:""}${i.revision>1?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}${i.source?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">from upload</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">Edit ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
   return topbar("Edit Document","Upload an existing invoice to revise it, or resume a draft.",["Workspace","Edit Document"],action)+`<div class="container">${drop}${list}</div>`;
 }
 /* ---- platform module launcher ---- */
@@ -941,10 +1194,18 @@ function viewSections(){
     <div class="container"><div class="grid cols-3 sec-grid">${cards}</div></div>`;
 }
 
+/* ---- Templates (connected to Contract Maker's clause templates + the invoice layout) ---- */
+function viewTemplates(){
+  const cards = [
+    `<div class="card sec-card"><div class="sec-ic">${svg('newdoc')}</div><div class="sec-title">Commercial Invoice</div><div class="sec-desc">The standard A4 invoice layout with live totals, bank details and logo.</div><button class="btn btn-secondary" data-route="new" style="align-self:flex-start;margin-top:6px">Use template</button></div>`
+  ].concat(CONTRACT_TYPES.map(ct=>`<div class="card sec-card"><div class="sec-ic">${svg('tpl')}</div><div class="sec-title">${esc(ct.label)}</div><div class="sec-desc">${ct.clauses.length} default clauses: ${ct.clauses.slice(0,5).map(k=>CLAUSE_LIB[k].t).join(", ")}… All editable per contract.</div><button class="btn btn-secondary" data-act="new-contract" data-id="${ct.id}" style="align-self:flex-start;margin-top:6px">Use template</button></div>`));
+  return topbar("Templates","Document templates — pick one to start a new document with its default structure.",["Library","Templates"])+
+    `<div class="container"><div class="grid cols-3 sec-grid">${cards.join("")}</div></div>`;
+}
+
 const VIEWS={
-  dashboard:viewDashboard, companies:viewCompanies, new:viewNew, invoice:viewNew, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
-  contract:()=>viewComing("Contract Maker",["Document Maker","Contract Maker"],"Draft commercial contracts using the same verified companies, revisions and export tools as invoices.",["Contract templates with a reusable clause library","Party & signatory blocks pulled from your Companies","Revisions, PDF/DOCX export and AI-assisted drafting"]),
-  templates:()=>viewComing("Templates",["Library","Templates"],"Reusable layouts for invoices and contracts so every document stays on-brand.",["Commercial invoice, proforma and packing list layouts","Contract templates with clause library","Per-company default terms and branding"]),
+  dashboard:viewDashboard, companies:viewCompanies, new:viewNew, invoice:viewNew, contract:viewContract, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
+  templates:viewTemplates,
 };
 
 function render(){
@@ -997,7 +1258,7 @@ async function deleteCompany(id){
 }
 
 /* ---------------- document deletion (reusable; used from every document list) ---------------- */
-function docType(d){ let t="Commercial Invoice"; if(d.revision>1)t+=" · Revision "+d.revision; if(d.source)t+=" · from upload"; return t; }
+function docType(d){ let t = d.docType==="contract" ? ctypeLabel(d.contract&&d.contract.ctype) : "Commercial Invoice"; if(d.revision>1)t+=" · Revision "+d.revision; if(d.source)t+=" · from upload"; return t; }
 function confirmDeleteDoc(id){ const d=invoices.find(x=>x.id===id); if(!d)return; delDoc=d; delBusy=false; render(); }
 async function performDeleteDoc(){
   if(delBusy||!delDoc)return; const d=delDoc; delBusy=true; render();
@@ -1048,9 +1309,9 @@ function delOverlay(){
 function buildDocRow(d,status){
   const seller=companies.find(c=>c.id===d.sellerId)||d.seller||null;
   const buyer=companies.find(c=>c.id===d.buyerId)||d.buyer||null;
-  const items=d.items.map(x=>({id:x.id,description:x.description||"",quantity:isFinite(x.quantity)?x.quantity:0,unit:x.unit||"",unitPrice:isFinite(x.unitPrice)?x.unitPrice:0}));
+  const items=d.items.map(x=>({id:x.id,description:x.description||"",quantity:isFinite(x.quantity)?x.quantity:0,unit:x.unit||"",unitPrice:isFinite(x.unitPrice)?x.unitPrice:0,model:x.model||"",origin:x.origin||"",hsCode:x.hsCode||""}));
   const t=computeTotals(items,d.currency);
-  return { user_id:SB.uid, number:(d.number||"").trim(), number_mode:d.numberMode||"auto", doc_date:d.date, currency:d.currency,
+  return { user_id:SB.uid, document_type:d.docType||"invoice", contract:d.docType==="contract"?(d.contract||null):null, number:(d.number||"").trim(), number_mode:d.numberMode||"auto", doc_date:d.date, currency:d.currency,
     seller_id:d.sellerId||null, buyer_id:d.buyerId||null, seller_snapshot:snapCompany(seller), buyer_snapshot:snapCompany(buyer),
     items, shipping_route:d.shippingRoute||null, payment_terms:d.paymentTerms||null, notes:d.notes||null,
     logo_mode:d.logoMode, logo_size:d.logoSize, custom_logo_path:d.customLogoKey||null,
@@ -1062,7 +1323,7 @@ function upsertInvoiceCache(doc){ const i=invoices.findIndex(x=>x.id===doc.id); 
 
 async function saveDraft(){
   if(busy||!draft)return;
-  if(isFinalized(draft)){ toast("Finalized invoices can't be edited — create a revision.",true); return; }
+  if(isFinalized(draft)){ toast("Finalized documents can't be edited — create a revision.",true); return; }
   if(!draft.items.some(i=>i.description.trim())){ toast("Add at least one product line before saving.",true); return; }
   busy=true; render();
   try{
@@ -1084,7 +1345,7 @@ async function finalizeDoc(){
   if(!draft.sellerId && !draft.seller) missing.push("seller");
   if(!draft.items.some(i=>i.description.trim())) missing.push("at least one product with a description");
   if(missing.length){ toast("Cannot finalize — missing: "+missing.join(", ")+".",true); return; }
-  if(!confirm("Finalize this invoice? Once finalized it is locked and any change requires a new revision.")) return;
+  if(!confirm("Finalize this "+(draft.docType==="contract"?"contract":"invoice")+"? Once finalized it is locked and any change requires a new revision.")) return;
   busy=true; render();
   try{
     // Auto numbering is owned by the generator: allocate + persist the counter now.
@@ -1096,7 +1357,7 @@ async function finalizeDoc(){
     else { const [ins]=await SB.insert("documents",row); saved=docFromRow(ins); }
     draft=saved; upsertInvoiceCache(saved);
     busy=false; render();
-    toast("Invoice "+saved.number+" finalized.");
+    toast((saved.docType==="contract"?"Contract ":"Invoice ")+saved.number+" finalized.");
     openPreview(saved); // final preview + export
   }catch(err){ busy=false; render(); toast("Could not finalize: "+err.message,true); }
 }
@@ -1107,6 +1368,8 @@ function createRevision(){
   const original=draft;
   draft={
     id:null, status:"draft",
+    docType: original.docType||"invoice",
+    contract: original.contract ? JSON.parse(JSON.stringify(original.contract)) : null,
     revision:(original.revision||1)+1,
     revisionOf: original.revisionOf || original.id,   // always point at the root document
     finalizedAt:null,
@@ -1121,15 +1384,15 @@ function createRevision(){
     logoMode: original.logoMode, logoSize: original.logoSize, customLogoKey: original.customLogoKey,
     source: original.source ? {...original.source} : null   // keep the uploaded original linked across revisions
   };
-  route="new"; window.scrollTo(0,0); render();
-  toast("Revision "+draft.revision+" started — the original invoice is unchanged.");
+  route=draft.docType==="contract"?"contract":"new"; window.scrollTo(0,0); render();
+  toast("Revision "+draft.revision+" started — the original document is unchanged.");
 }
 
 async function openDoc(id){
   const d=invoices.find(x=>x.id===id); if(!d)return;
   draft=JSON.parse(JSON.stringify(d));
   srcOpen=true; extOpen=false; ai.proposal=null; ai.instruction="";
-  route="new"; window.scrollTo(0,0); render();
+  route=draft.docType==="contract"?"contract":"new"; window.scrollTo(0,0); render();
   if(draft.source&&draft.source.path&&!draft.source.url){
     try{ const u=await SB.signedUrl(SOURCE_BUCKET,draft.source.path,3600); if(u){draft.source.url=u; render();} }catch(e){}
   }
@@ -1216,7 +1479,8 @@ function computeDiff(before,after){
 }
 async function askClaude(){
   if(ai.busy||!draft)return;
-  if(isFinalized(draft)){ ai.error="This invoice is finalized — create a revision to use the assistant."; render(); return; }
+  const kind=draft.docType==="contract"?"contract":"invoice";
+  if(isFinalized(draft)){ ai.error="This "+kind+" is finalized — create a revision to use the assistant."; render(); return; }
   const instr=(ai.instruction||"").trim();
   if(!instr){ ai.error="Type an instruction first."; render(); return; }
   ai.busy=true; ai.error=""; render();
@@ -1225,13 +1489,78 @@ async function askClaude(){
     const cd=has?{ currency:draft.currency,
       sellerName:(companies.find(c=>c.id===draft.sellerId)||draft.seller||{}).name||null,
       buyerName:(companies.find(c=>c.id===draft.buyerId)||draft.buyer||{}).name||null,
-      items:draft.items.map(i=>({description:i.description,quantity:i.quantity,unit:i.unit,unitPrice:i.unitPrice})),
+      items:draft.items.map(i=>({description:i.description,model:i.model||null,quantity:i.quantity,unit:i.unit,unitPrice:i.unitPrice,origin:i.origin||null,hsCode:i.hsCode||null})),
       shippingRoute:draft.shippingRoute, paymentTerms:draft.paymentTerms, notes:draft.notes }:null;
-    const res=await callAI({ instruction:instr, companyNames:companies.map(c=>c.name), currentDraft:cd });
+    if(cd&&kind==="contract"){
+      cd.contractType=draft.contract.ctype;
+      cd.terms=draft.contract.terms;
+      cd.clauses=(draft.contract.clauses||[]).map(cl=>({title:cl.title,body:String(cl.body||"").slice(0,1500)}));
+    }
+    const res=await callAI({ instruction:instr, mode:kind, companyNames:companies.map(c=>c.name), currentDraft:cd });
     ai.busy=false;
     if(!res.proposal){ ai.error="No proposal returned."; render(); return; }
-    ai.proposal=buildProposal(res.proposal); render();
+    ai.proposal = kind==="contract" ? buildContractProposal(res.proposal) : buildProposal(res.proposal);
+    render();
   }catch(err){ ai.busy=false; ai.error=err.message||String(err); render(); }
+}
+
+/* Build a proposed CONTRACT draft from Claude's structured output. Companies come from
+   the DB, quantities/prices are validated, totals computed by the app; clause ops are
+   applied to a copy and everything is shown as OLD → NEW before applying. */
+function buildContractProposal(p){
+  const after=JSON.parse(JSON.stringify(draft));
+  if(!after.contract) after.contract={ctype:"sales",terms:emptyTerms(),clauses:[],sig:{sellerRep:"",sellerTitle:"",buyerRep:"",buyerTitle:""},custom:false};
+  const warnings=[]; const needs=Array.isArray(p.needs)?p.needs.slice():[];
+  const rows=[];
+  if(p.contract_type && CONTRACT_TYPES.some(x=>x.id===p.contract_type) && p.contract_type!==after.contract.ctype){
+    rows.push(["Contract type",ctypeLabel(after.contract.ctype),ctypeLabel(p.contract_type)]);
+    after.contract.ctype=p.contract_type;
+    if(!after.contract.custom) after.contract.clauses=defaultClauses(p.contract_type);
+  }
+  const nameOf=(d,w)=>{ const co=companies.find(x=>x.id===d[w+"Id"])||d[w]; return co?co.name:"—"; };
+  if(p.seller_name){ const m=matchCompany(p.seller_name); if(m){ if(m.id!==after.sellerId){rows.push(["Seller",nameOf(after,"seller"),m.name]);} after.sellerId=m.id; after.seller=null; } else warnings.push(`Seller “${p.seller_name}” isn't in your Companies. Add it first — company data is loaded from your database, never invented.`); }
+  if(p.buyer_name){ const m=matchCompany(p.buyer_name); if(m){ if(m.id!==after.buyerId){rows.push(["Buyer",nameOf(after,"buyer"),m.name]);} after.buyerId=m.id; after.buyer=null; } else warnings.push(`Buyer “${p.buyer_name}” isn't in your Companies. Add it first.`); }
+  if(p.currency && CURRENCIES.some(x=>x.code===p.currency) && p.currency!==after.currency){ rows.push(["Currency",after.currency,p.currency]); after.currency=p.currency; }
+  else if(!p.currency && p.seller_name){ const s=companies.find(x=>x.id===after.sellerId); if(s&&s.currency&&s.currency!==after.currency){ rows.push(["Currency",after.currency,s.currency]); after.currency=s.currency; } }
+  if(Array.isArray(p.items)&&p.items.length){
+    const beforeItems=after.items;
+    after.items=p.items.map((it,idx)=>{
+      const desc=String(it.description||"").trim(); const label=desc||("item "+(idx+1));
+      let q=it.quantity, up=it.unit_price;
+      if(q==null||!isFinite(q)){ needs.push("Quantity for "+label); q=0; }
+      if(up==null||!isFinite(up)){ needs.push("Unit price for "+label); up=0; }
+      return { id:uid("li"), description:desc, model:String(it.model||"").trim(), quantity:Math.max(0,Number(q)||0), unit:String(it.unit||"").trim(), unitPrice:Math.max(0,Number(up)||0), origin:String(it.origin||"").trim(), hsCode:String(it.hs_code||"").trim() };
+    });
+    const key=a=>JSON.stringify(a.map(i=>[i.description,i.model,i.quantity,i.unit,i.unitPrice,i.origin,i.hsCode]));
+    if(key(beforeItems)!==key(after.items)){
+      if(beforeItems.length===after.items.length){
+        after.items.forEach((it,idx)=>{ const b=beforeItems[idx];
+          if((b.description||"")!==(it.description||"")) rows.push([`Product ${idx+1} description`,b.description||"—",it.description||"—"]);
+          if(b.quantity!==it.quantity) rows.push([`Product ${idx+1} quantity`,String(b.quantity),String(it.quantity)]);
+          if((b.model||"")!==(it.model||"")) rows.push([`Product ${idx+1} model`,b.model||"—",it.model||"—"]);
+          if(b.unitPrice!==it.unitPrice) rows.push([`Product ${idx+1} unit price`,money(b.unitPrice,draft.currency),money(it.unitPrice,after.currency)]);
+          if((b.origin||"")!==(it.origin||"")) rows.push([`Product ${idx+1} origin`,b.origin||"—",it.origin||"—"]);
+        });
+      } else rows.push(["Products",`${beforeItems.length} line(s)`,after.items.map(i=>`${i.quantity||0}×${i.description||"—"}`).join(", ")||"—"]);
+    }
+  }
+  const TERM_LABELS={payment:"Payment terms",delivery:"Delivery terms",delivery_period:"Delivery period",shipping_origin:"Shipping origin",shipping_destination:"Shipping destination",shipping_method:"Shipping method",incoterm:"Incoterm",origin_country:"Country of origin",inspection:"Inspection terms",warranty:"Warranty terms",packaging:"Packaging terms",insurance:"Insurance terms",additional:"Additional terms"};
+  const TERM_KEYS={payment:"payment",delivery:"delivery",delivery_period:"deliveryPeriod",shipping_origin:"shipOrigin",shipping_destination:"shipDest",shipping_method:"shipMethod",incoterm:"incoterm",origin_country:"originCountry",inspection:"inspection",warranty:"warranty",packaging:"packaging",insurance:"insurance",additional:"additional"};
+  if(p.terms){ for(const k in TERM_KEYS){ const v=p.terms[k]; if(v!=null&&String(v).trim()!==""){ const ak=TERM_KEYS[k]; const old=after.contract.terms[ak]||"—"; if(old!==String(v)){ rows.push([TERM_LABELS[k],old,String(v)]); after.contract.terms[ak]=String(v); } } } }
+  const trunc=s=>{ s=String(s||"").replace(/\s+/g," ").trim(); return s.length>90?s.slice(0,90)+"…":s; };
+  if(Array.isArray(p.clause_ops)){
+    for(const op of p.clause_ops){
+      const title=String(op.title||"").trim(); if(!title)continue;
+      const norm=s=>String(s).toLowerCase().trim();
+      const idx=after.contract.clauses.findIndex(x=>norm(x.title)===norm(title)||norm(x.title).includes(norm(title))||norm(title).includes(norm(x.title)));
+      if(op.op==="remove"){ if(idx>=0){ rows.push(["Remove clause “"+after.contract.clauses[idx].title+"”",trunc(after.contract.clauses[idx].body),"(removed)"]); after.contract.clauses.splice(idx,1); after.contract.custom=true; } else warnings.push(`Clause “${title}” wasn't found, so nothing was removed.`); }
+      else if(op.op==="add"){ const cl={id:uid("cl"),title,body:String(op.body||"")}; let pos=(op.position&&op.position>=1)?Math.min(op.position-1,after.contract.clauses.length):after.contract.clauses.length; after.contract.clauses.splice(pos,0,cl); after.contract.custom=true; rows.push(["Add clause “"+title+"”","—",trunc(cl.body)||"(empty)"]); }
+      else if(op.op==="update"){ if(idx>=0){ const old=after.contract.clauses[idx].body; after.contract.clauses[idx].body=String(op.body||""); after.contract.custom=true; rows.push(["Rewrite clause “"+after.contract.clauses[idx].title+"”",trunc(old),trunc(op.body)]); } else { const cl={id:uid("cl"),title,body:String(op.body||"")}; after.contract.clauses.push(cl); after.contract.custom=true; rows.push(["Add clause “"+title+"”","—",trunc(cl.body)]); warnings.push(`Clause “${title}” wasn't found — it was added as a new clause instead.`); } }
+    }
+  }
+  const beforeTotal=computeTotals(draft.items,draft.currency), afterTotal=computeTotals(after.items,after.currency);
+  if(beforeTotal.total!==afterTotal.total||draft.currency!==after.currency) rows.push(["Calculated total",money(beforeTotal.total,draft.currency),money(afterTotal.total,after.currency)]);
+  return { after, rows, warnings, needs:[...new Set(needs)], message:p.message||"" };
 }
 function applyProposal(){ if(!ai.proposal)return; draft=ai.proposal.after; ai.proposal=null; ai.instruction=""; ai.error=""; render(); toast("AI changes applied — review the preview, then Save draft or Finalize."); }
 function aiProposalOverlay(){
@@ -1401,7 +1730,7 @@ function previewOverlay(){
         <button class="btn btn-ghost" data-act="close-preview">Close</button>
       </div>
     </div>
-    <div class="pv-scroll"><div class="pv-sheet">${a4(d,seller,buyer)}</div></div>
+    <div class="pv-scroll"><div class="pv-sheet">${renderDocA4(d,seller,buyer)}</div></div>
   </div>`;
 }
 
@@ -1410,7 +1739,7 @@ function waitForImages(root){ const imgs=[...root.querySelectorAll("img")]; retu
 async function exportPDF(doc){
   const {seller,buyer}=resolveParties(doc);
   const root=document.getElementById("print-root");
-  root.innerHTML=a4(doc,seller,buyer);
+  root.innerHTML=renderDocA4(doc,seller,buyer);
   try{ await waitForImages(root); }catch(e){}
   window.print();
 }
@@ -1441,10 +1770,83 @@ async function exportDOCX(doc){
   try{
     const {seller,buyer}=resolveParties(doc);
     const logo=await logoPng(doc).catch(()=>null);
-    const parts=buildDocx(doc,seller,buyer,logo);
+    const parts = doc.docType==="contract" ? buildContractDocx(doc,seller,buyer,logo) : buildDocx(doc,seller,buyer,logo);
     const blob=zipStore(parts);
-    downloadBlob(blob,(doc.number||"invoice").replace(/[^\w.-]+/g,"_")+".docx");
+    downloadBlob(blob,(doc.number||(doc.docType==="contract"?"contract":"invoice")).replace(/[^\w.-]+/g,"_")+".docx");
   }catch(err){ toast("Could not export DOCX: "+(err.message||err),true); }
+}
+
+/* ---- OOXML (.docx) builder for CONTRACTS — reuses wRun/wPara/wCell + the same packaging ---- */
+function docxParts(bodyArr,NS,logo){
+  const sect=`<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>`;
+  const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>${bodyArr.join("")}${sect}</w:body></w:document>`;
+  const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const docRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${logo?`<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>`:""}</Relationships>`;
+  const parts=[
+    {name:"[Content_Types].xml", data:strToU8(contentTypes)},
+    {name:"_rels/.rels", data:strToU8(rels)},
+    {name:"word/document.xml", data:strToU8(documentXml)},
+    {name:"word/_rels/document.xml.rels", data:strToU8(docRels)},
+  ];
+  if(logo) parts.push({name:"word/media/logo.png", data:logo.bytes});
+  return parts;
+}
+function buildContractDocx(doc,seller,buyer,logo){
+  const c=doc.contract||{ctype:"sales",terms:emptyTerms(),clauses:[],sig:{}};
+  const ctx=clauseCtx(doc,seller,buyer);
+  const cur=doc.currency; const t=computeTotals(doc.items,cur); const money2=v=>money(v,cur);
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  const body=[];
+  if(logo){ body.push(`<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${logo.wEmu}" cy="${logo.hEmu}"/><wp:docPr id="1" name="logo"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${logo.wEmu}" cy="${logo.hEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`); }
+  else if(seller){ body.push(wPara(wRun(seller.name,{b:1,sz:28}))); }
+  body.push(wPara(wRun(ctypeLabel(c.ctype).toUpperCase(),{b:1,sz:34,color:"1E3AAE"}),{spacing:[120,40]}));
+  body.push(wPara(wRun("Contract: "+(doc.number||"—")+"     Date: "+fdate(doc.date)+(doc.revision>1?"     Revision "+doc.revision:""),{sz:20,color:"4C5973"}),{border:true,spacing:[0,160]}));
+  // parties
+  const partyText=(co)=>{ if(!co)return wRun("Not provided",{i:1,color:"8290A8",sz:18}); const lines=[]; if(co.address)lines.push(co.address); const cc=[co.city,co.country].filter(Boolean).join(", "); if(cc)lines.push(cc); if(co.taxId)lines.push("Tax: "+co.taxId); if(co.registration)lines.push("Reg: "+co.registration); if(co.email)lines.push(co.email); return wRun(co.name,{b:1,sz:20})+(lines.length?"<w:r><w:br/></w:r>"+wRun(lines.join("\n"),{sz:18,color:"3E485D"}):""); };
+  body.push(`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4819"/><w:gridCol w:w="4819"/></w:tblGrid>`+
+    `<w:tr>${wCell(wRun("SELLER",{b:1,sz:16,color:"1E3AAE",caps:1}),4819)}${wCell(wRun("BUYER",{b:1,sz:16,color:"1E3AAE",caps:1}),4819)}</w:tr>`+
+    `<w:tr>${wCell(partyText(seller),4819)}${wCell(partyText(buyer),4819)}</w:tr></w:tbl>`);
+  body.push(wPara(""));
+  // product table (8 columns)
+  const items=doc.items.filter(i=>i.description.trim());
+  if(items.length){
+    const cols=[2400,1300,700,700,1200,1400,1000,938];
+    const hdr=(txt,i,al)=>wCell(wRun(txt,{b:1,sz:14,color:"4C5973",caps:1}),cols[i],{shd:"F6F7F9",align:al});
+    let rows=`<w:tr>${hdr("Description",0)}${hdr("Model/Spec",1)}${hdr("Qty",2,"right")}${hdr("Unit",3)}${hdr("Unit price",4,"right")}${hdr("Line total",5,"right")}${hdr("Origin",6)}${hdr("HS/CN",7)}</w:tr>`;
+    items.forEach(it=>{ rows+=`<w:tr>${wCell(wRun(it.description,{sz:16}),cols[0])}${wCell(wRun(it.model||"—",{sz:16}),cols[1])}${wCell(wRun(String(it.quantity||0),{sz:16}),cols[2],{align:"right"})}${wCell(wRun(it.unit||"—",{sz:16}),cols[3])}${wCell(wRun(money2(it.unitPrice||0),{sz:16}),cols[4],{align:"right"})}${wCell(wRun(money2(lineTotal(it,cur)),{sz:16,b:1}),cols[5],{align:"right"})}${wCell(wRun(it.origin||"—",{sz:16}),cols[6])}${wCell(wRun(it.hsCode||"—",{sz:16}),cols[7])}</w:tr>`; });
+    body.push(`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="ECEEF2"/><w:bottom w:val="single" w:sz="4" w:color="ECEEF2"/><w:insideH w:val="single" w:sz="4" w:color="ECEEF2"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>${cols.map(x=>`<w:gridCol w:w="${x}"/>`).join("")}</w:tblGrid>${rows}</w:tbl>`);
+    body.push(wPara(wRun("TOTAL CONTRACT VALUE ("+cur+"): "+money2(t.total),{b:1,sz:24,color:"1E3AAE"}),{align:"right",spacing:[120,160]}));
+  }
+  // commercial terms
+  const terms=c.terms||emptyTerms();
+  const termRows=[["Payment terms",terms.payment],["Delivery terms",terms.delivery],["Delivery period",terms.deliveryPeriod],["Shipping origin",terms.shipOrigin],["Shipping destination",terms.shipDest],["Shipping method",terms.shipMethod],["Incoterm",terms.incoterm],["Country of origin",terms.originCountry],["Inspection",terms.inspection],["Warranty",terms.warranty],["Packaging",terms.packaging],["Insurance",terms.insurance],["Additional terms",terms.additional]].filter(r=>r[1]&&String(r[1]).trim());
+  if(termRows.length){
+    body.push(wPara(wRun("COMMERCIAL TERMS",{b:1,sz:16,color:"61708C",caps:1}),{border:true,spacing:[240,80]}));
+    termRows.forEach(r=>body.push(wPara(wRun(r[0]+": ",{b:1,sz:18})+wRun(String(r[1]),{sz:18,color:"3E485D"}))));
+  }
+  // clauses (numbered heading + body; tokens substituted with verified data)
+  (c.clauses||[]).forEach((cl,i)=>{
+    body.push(wPara(wRun((i+1)+". "+cl.title,{b:1,sz:20}),{spacing:[220,60]}));
+    body.push(wPara(wRun(fillClause(cl.body,ctx),{sz:18,color:"3E485D"})));
+  });
+  // bank details of the seller (verified data)
+  const b=seller&&seller.bank;
+  if(b&&(b.name||b.iban||b.account||b.swift||b.holder)){
+    body.push(wPara(wRun("BANK DETAILS (SELLER)",{b:1,sz:16,color:"61708C",caps:1}),{border:true,spacing:[240,80]}));
+    [["Bank",b.name],["Account holder",b.holder],["Bank address",b.address],["IBAN",b.iban],["Account no.",b.account],["SWIFT / BIC",b.swift]].filter(x=>x[1]).forEach(x=>body.push(wPara(wRun(x[0]+": ",{b:1,sz:18})+wRun(x[1],{sz:18,color:"3E485D"}))));
+  }
+  // signatures — two columns, with signature + stamp areas (nothing is generated)
+  const sig=c.sig||{};
+  const sigCell=(role,co,rep,title)=> wRun(role,{b:1,sz:16,color:"1E3AAE",caps:1})+"<w:r><w:br/></w:r>"+
+    wRun(co?co.name:"—",{b:1,sz:18})+"<w:r><w:br/></w:r>"+
+    wRun("Authorized representative: "+(rep||"________________")+(title?(" — "+title):""),{sz:16,color:"3E485D"})+"<w:r><w:br/></w:r><w:r><w:br/></w:r>"+
+    wRun("Signature: ______________________",{sz:16})+"<w:r><w:br/></w:r><w:r><w:br/></w:r>"+
+    wRun("Company stamp:",{sz:16,color:"61708C"});
+  body.push(wPara(wRun("SIGNATURES",{b:1,sz:16,color:"61708C",caps:1}),{border:true,spacing:[300,120]}));
+  body.push(`<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="4819"/><w:gridCol w:w="4819"/></w:tblGrid>`+
+    `<w:tr>${wCell(sigCell("Seller",seller,sig.sellerRep,sig.sellerTitle),4819)}${wCell(sigCell("Buyer",buyer,sig.buyerRep,sig.buyerTitle),4819)}</w:tr></w:tbl>`);
+  return docxParts(body,NS,logo);
 }
 function downloadBlob(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
 
@@ -1580,7 +1982,10 @@ document.addEventListener("click",e=>{
   if(act==="sign-out"){ SB.signOut().then(()=>{ companies=[]; invoices=[]; for(const k in files)delete files[k]; draft=null; genMsg=null; section=""; route="dashboard"; render(); }); return; }
   if(act==="disconnect"){ SB.signOut().then(()=>{ SB.clearConfig(); connect.url=""; connect.key=""; companies=[]; invoices=[]; render(); }); return; }
   // navigation ("New Document" always starts a clean draft when the current one is saved/locked)
-  const r=e.target&&e.target.closest&&e.target.closest("[data-route]"); if(r){ const nr=r.dataset.route; preview=null; ai.proposal=null; if(nr==="new" && draft && (draft.id||isFinalized(draft))){ draft=freshDraft(); ai.instruction=""; ai.error=""; } route=nr; window.scrollTo(0,0); render(); return; }
+  const r=e.target&&e.target.closest&&e.target.closest("[data-route]"); if(r){ const nr=r.dataset.route; preview=null; ai.proposal=null;
+    if((nr==="new"||nr==="invoice") && draft && (draft.id||isFinalized(draft)||draft.docType==="contract")){ draft=freshDraft(); ai.instruction=""; ai.error=""; }
+    if(nr==="contract" && draft && (draft.id||isFinalized(draft)) && draft.docType==="contract"){ draft=freshContractDraft(); ai.instruction=""; ai.error=""; }
+    route=nr; window.scrollTo(0,0); render(); return; }
   if(!a)return;
   const id=a.dataset.id;
   if(act==="enter-section"){ const s=SECTIONS.find(x=>x.id===id&&x.enabled); if(s){ section=s.id; route=(MODULES[s.id]||{}).home||"dashboard"; window.scrollTo(0,0); render(); } return; }
@@ -1592,6 +1997,12 @@ document.addEventListener("click",e=>{
   if(act==="save-co"){saveCompany();}
   if(act==="add-item"){draft.items.push(newLine());render();}
   if(act==="rm-item"){if(draft.items.length>1)draft.items=draft.items.filter(x=>x.id!==id);render();}
+  if(act==="dup-item"){const it=draft.items.find(x=>x.id===id); if(it){const i=draft.items.indexOf(it); draft.items.splice(i+1,0,{...it,id:uid("li")});} render();}
+  // contract clauses + templates
+  if(act==="new-contract"){draft=freshContractDraft(id); ai.instruction=""; ai.error=""; route="contract"; window.scrollTo(0,0); render();}
+  if(act==="add-clause"){draft.contract.clauses.push({id:uid("cl"),title:"New clause",body:""}); draft.contract.custom=true; render();}
+  if(act==="rm-clause"){draft.contract.clauses=draft.contract.clauses.filter(x=>x.id!==id); draft.contract.custom=true; render();}
+  if(act==="cl-up"||act==="cl-down"){const arr=draft.contract.clauses; const i=arr.findIndex(x=>x.id===id); const j=act==="cl-up"?i-1:i+1; if(i>=0&&j>=0&&j<arr.length){const tmp=arr[i];arr[i]=arr[j];arr[j]=tmp; draft.contract.custom=true; render();}}
   // invoice lifecycle
   if(act==="save-draft"){saveDraft();}
   if(act==="save-finalize"){finalizeDoc();}
@@ -1637,6 +2048,13 @@ document.addEventListener("input",e=>{
     if(k==="quantity"||k==="unitPrice"){ patchAmounts(); }
     updateLivePreview(); return;
   }
+  // contract editor fields (terms / clauses / signatures) — update + live preview, no re-render
+  const tk=e.target.dataset.term;
+  if(tk&&draft&&draft.contract){ draft.contract.terms[tk]=e.target.value; updateLivePreview(); return; }
+  const clId=e.target.dataset.clause;
+  if(clId&&draft&&draft.contract){ const cl=draft.contract.clauses.find(x=>x.id===clId); if(cl){ cl[e.target.dataset.ck==="title"?"title":"body"]=e.target.value; draft.contract.custom=true; updateLivePreview(); } return; }
+  const sg=e.target.dataset.sig;
+  if(sg&&draft&&draft.contract){ draft.contract.sig[sg]=e.target.value; updateLivePreview(); return; }
   const mb=e.target.dataset.mbank;
   if(mb&&editDraft){ if(!editDraft.bank)editDraft.bank={}; editDraft.bank[mb]=e.target.value; return; }
   const mf=e.target.dataset.mfield;
@@ -1653,6 +2071,12 @@ document.addEventListener("change",e=>{
     render();
   }
   const mf=e.target.dataset.mfield; if(mf==="currency"&&editDraft){ editDraft.currency=e.target.value; }
+  // contract type: switch template (keeps clauses once the user has customized them)
+  if(e.target.dataset.cfg==="ctype"&&draft&&draft.contract){
+    draft.contract.ctype=e.target.value;
+    if(!draft.contract.custom) draft.contract.clauses=defaultClauses(e.target.value);
+    render();
+  }
 });
 
 /* drag & drop onto the upload zone */
@@ -1673,7 +2097,7 @@ function patchAmounts(){
 function updateLivePreview(){
   const seller=companies.find(c=>c.id===draft.sellerId)||(draft.seller||null);
   const buyer=companies.find(c=>c.id===draft.buyerId)||(draft.buyer||null);
-  const host=document.querySelector(".a4-scale"); if(host)host.innerHTML=a4(draft,seller,buyer);
+  const host=document.querySelector(".a4-scale"); if(host)host.innerHTML=renderDocA4(draft,seller,buyer);
   refreshFinalize();
 }
 function refreshFinalize(){
