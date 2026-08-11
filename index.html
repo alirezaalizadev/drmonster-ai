@@ -343,6 +343,171 @@
   .clause-tools{display:flex;gap:4px;align-items:center}
   .clause-tools .btn{padding:3px 8px;font-size:12px}
   .row-2c{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* ===================== Company Risk Intelligence (dark premium) ===================== */
+  .rk-root{--rk-bg:#0b1020;--rk-surface:#141a2e;--rk-surface2:#0d1426;--rk-border:#232a42;--rk-ink:#e6ebf5;--rk-sub:#94a3b8;--rk-mut:#64748b;background:var(--rk-bg);color:var(--rk-ink);margin:-24px;min-height:calc(100vh - 0px);font-feature-settings:"tnum" 1}
+  @media(max-width:900px){.rk-root{margin:-14px}}
+  .rk-root svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .rk-root a{color:#7aa2ff}
+  .rk-topbar{background:linear-gradient(180deg,#111831,#0d1426);border-bottom:1px solid var(--rk-border);padding:22px 26px;position:sticky;top:0;z-index:5;backdrop-filter:blur(4px)}
+  .rk-topbar-in{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;max-width:1180px;margin:0 auto}
+  .rk-crumb{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5f7bd6}
+  .rk-crumb svg{width:13px;height:13px}
+  .rk-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:6px 0 0}
+  .rk-sub{font-size:12.5px;color:var(--rk-sub);margin:4px 0 0;max-width:640px;line-height:1.5}
+  .rk-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .rk-body{padding:20px 26px 40px;max-width:1180px;margin:0 auto}
+  .rk-grid{display:grid;gap:14px}
+  .rk-grid-2{grid-template-columns:1fr 1fr}.rk-grid-3{grid-template-columns:repeat(3,1fr)}.rk-grid-4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:1000px){.rk-grid-4{grid-template-columns:repeat(2,1fr)}.rk-grid-3{grid-template-columns:1fr 1fr}.rk-root .rk-grid{grid-template-columns:1fr!important}}
+  @media(max-width:640px){.rk-grid-2,.rk-grid-4,.rk-grid-3{grid-template-columns:1fr}}
+  .rk-card{background:var(--rk-surface);border:1px solid var(--rk-border);border-radius:14px;padding:16px}
+  .rk-card-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .rk-card-h h3{font-size:14px;font-weight:700;margin:0}
+  .rk-card-h svg{color:#7aa2ff;width:17px;height:17px}
+  .rk-btn-primary{background:#2559eb;color:#fff;border:none;font-weight:600}
+  .rk-btn-primary:hover{background:#1d4ed8}
+  .rk-btn-lg{padding:11px 20px;font-size:14px;border-radius:11px}
+  .rk-btn-secondary{background:#1e2740;color:#dbe4f7;border:1px solid #2c3557}
+  .rk-btn-secondary:hover{background:#28334f}
+  .rk-btn-ghost{background:transparent;color:#a7b4cf;border:1px solid transparent;padding:6px 10px}
+  .rk-btn-ghost:hover{background:rgba(255,255,255,.06);color:#fff}
+  .rk-root .btn{border-radius:10px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:8px 14px;transition:.14s}
+  .rk-lbl{display:block;font-size:12px;font-weight:600;color:var(--rk-sub);margin-bottom:6px}
+  .rk-inp{width:100%;background:#0e152b;border:1px solid #2a3352;border-radius:10px;padding:11px 13px;color:var(--rk-ink);font-size:14px;outline:none;transition:.14s}
+  .rk-inp:focus{border-color:#3b6bf0;box-shadow:0 0 0 3px rgba(59,107,240,.18)}
+  .rk-inp::placeholder{color:#566181}
+  .rk-search{padding:22px}
+  .rk-search-head{display:flex;gap:14px;align-items:center}
+  .rk-search-ic{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#2559eb,#1e3fae);display:flex;align-items:center;justify-content:center;flex:none}
+  .rk-search-ic svg{width:22px;height:22px;color:#fff}
+  .rk-search-title{font-size:17px;font-weight:700}
+  .rk-search-sub{font-size:12.5px;color:var(--rk-sub);margin-top:2px}
+  .rk-adv-toggle{background:none;border:none;color:#7aa2ff;font-size:12.5px;font-weight:600;cursor:pointer;margin-top:14px;padding:4px 0}
+  .rk-demo{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#cbd5e1;cursor:pointer}
+  .rk-demo span{color:var(--rk-mut);font-size:11.5px}
+  .rk-demo input{accent-color:#2559eb;width:15px;height:15px}
+  .rk-err{display:flex;align-items:center;gap:8px;background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.4);color:#fca5a5;padding:10px 12px;border-radius:10px;font-size:13px;margin-top:14px}
+  .rk-err svg{color:#f87171}
+  /* stat */
+  .rk-stat{display:flex;flex-direction:column;gap:2px}
+  .rk-stat-ic svg{width:20px;height:20px}
+  .rk-stat-val{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:8px}
+  .rk-stat-lbl{font-size:12.5px;color:var(--rk-sub)}
+  .rk-stat-hint{font-size:11px;color:var(--rk-mut);margin-top:2px}
+  /* table */
+  .rk-table{width:100%;border-collapse:collapse;font-size:13px}
+  .rk-table th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--rk-mut);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--rk-border)}
+  .rk-table td{padding:10px;border-bottom:1px solid #1b2238;color:#cbd5e1}
+  .rk-table tbody tr:hover{background:rgba(255,255,255,.03)}
+  .rk-table .num{text-align:right}
+  /* badge */
+  .rk-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.02em;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .rk-badge svg{width:12px;height:12px}
+  .rk-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#b6c2da;border:1px solid #2c3658;border-radius:999px;padding:2px 8px;background:#161d33}
+  .rk-chip svg{width:11px;height:11px}
+  /* pipeline */
+  .rk-pipe{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+  .rk-stage{display:flex;align-items:center;gap:10px;font-size:13px;padding:8px 10px;border-radius:9px;color:var(--rk-mut);transition:.2s}
+  .rk-stage svg{width:15px;height:15px}
+  .rk-stage.rk-todo{opacity:.5}
+  .rk-stage.rk-active{background:rgba(37,89,235,.14);color:#cfe0ff;font-weight:600}
+  .rk-stage.rk-done{color:#6ee7b7}
+  .rk-stage.rk-done svg{color:#10b981}
+  .rk-spin{width:14px;height:14px;border:2px solid rgba(122,162,255,.3);border-top-color:#7aa2ff;border-radius:50%;animation:rkspin .7s linear infinite;flex:none}
+  @keyframes rkspin{to{transform:rotate(360deg)}}
+  /* empty */
+  .rk-empty{text-align:center;padding:60px 24px;max-width:520px;margin:20px auto}
+  .rk-empty-ic{display:inline-flex;width:64px;height:64px;border-radius:16px;background:#141d38;border:1px solid #26304f;align-items:center;justify-content:center;margin-bottom:18px}
+  .rk-empty-ic svg{width:28px;height:28px;color:#5f7bd6}
+  .rk-empty h2{font-size:19px;font-weight:700;margin:0 0 8px}
+  .rk-empty p{font-size:13.5px;color:var(--rk-sub);line-height:1.6;margin:0 0 20px}
+  .rk-empty-sm{font-size:12.5px;color:var(--rk-mut);padding:14px;display:flex;align-items:center;gap:8px;justify-content:center}
+  .rk-watch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid #1e2740;border-radius:10px;background:#111830}
+  /* gauge */
+  .rk-gauge-card{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .rk-gauge{position:relative}
+  .rk-gauge-lvl{font-size:14px;font-weight:800;letter-spacing:.04em;margin-top:6px}
+  .rk-gauge-sub{display:flex;gap:14px;margin-top:8px;font-size:11.5px;color:var(--rk-sub)}
+  .rk-gauge-sub b{color:#e6ebf5}
+  /* top cards */
+  .rk-topcard{display:flex;flex-direction:column;gap:8px}
+  .rk-topcard-h{display:flex;align-items:center;justify-content:space-between}
+  .rk-topcard-ic svg{width:20px;height:20px}
+  .rk-topcard-t{font-size:13px;font-weight:700}
+  .rk-topcard-lines{font-size:11.5px;color:var(--rk-sub);display:flex;flex-direction:column;gap:1px}
+  /* critical distinction */
+  .rk-crit{background:linear-gradient(180deg,#171f38,#131a2e);border-color:#2a3357}
+  .rk-crit-lead{display:flex;gap:10px;align-items:flex-start}
+  .rk-crit-lead>svg{color:#f59e0b;width:20px;height:20px;margin-top:2px}
+  .rk-crit-row{display:flex;gap:22px;margin-top:14px;flex-wrap:wrap}
+  .rk-crit-item{display:flex;flex-direction:column;gap:5px}
+  .rk-crit-k{font-size:11px;color:var(--rk-mut);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  /* tabs */
+  .rk-tabs{display:flex;gap:4px;margin:18px 0 14px;overflow-x:auto;border-bottom:1px solid var(--rk-border);padding-bottom:0}
+  .rk-tab{display:inline-flex;align-items:center;gap:6px;background:none;border:none;border-bottom:2px solid transparent;color:var(--rk-sub);font-size:13px;font-weight:600;padding:9px 12px;cursor:pointer;white-space:nowrap}
+  .rk-tab svg{width:15px;height:15px}
+  .rk-tab:hover{color:#e6ebf5}
+  .rk-tab.on{color:#fff;border-bottom-color:#3b6bf0}
+  /* coverage / breakdown */
+  .rk-cov-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#cbd5e1}
+  .rk-cov-ok{color:#6ee7b7;display:inline-flex;align-items:center;gap:5px;font-weight:600}
+  .rk-cov-no{color:#94a3b8;display:inline-flex;align-items:center;gap:5px;font-weight:600}
+  .rk-cov-ok svg,.rk-cov-no svg{width:13px;height:13px}
+  .rk-brk-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}
+  .rk-brk-top svg{width:13px;height:13px;color:#7aa2ff;vertical-align:middle}
+  .rk-bar{height:7px;background:#1a2338;border-radius:999px;overflow:hidden}
+  .rk-bar-fill{height:100%;background:linear-gradient(90deg,#3b6bf0,#7aa2ff);border-radius:999px}
+  .rk-brk:hover .rk-bar{outline:1px solid #2c3658}
+  /* map / legend / network */
+  .rk-map{margin-top:4px}
+  .rk-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--rk-sub)}
+  .rk-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .rk-geo-dot text,.rk-node text{pointer-events:none}
+  .rk-node-panel{margin-top:10px;font-size:12px;color:#cbd5e1;background:#111830;border:1px solid #26304f;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px}
+  /* evidence */
+  .rk-ev-list{display:flex;flex-direction:column;gap:10px}
+  .rk-ev{border:1px solid #232c48;border-radius:12px;padding:12px;background:#111830}
+  .rk-ev-h{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:7px}
+  .rk-ev-title{font-size:13.5px;font-weight:700}
+  .rk-ev-body{font-size:12.5px;color:#c3cee2;line-height:1.55;margin-top:4px}
+  .rk-ev-meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:11.5px;color:var(--rk-mut)}
+  .rk-ev-meta span{display:inline-flex;align-items:center;gap:5px}
+  .rk-ev-meta svg{width:12px;height:12px}
+  .rk-src-link{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600}
+  .rk-src-link svg{width:12px;height:12px}
+  .rk-conf{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:999px;margin-left:auto}
+  .rk-conf-very_high,.rk-conf-high{background:rgba(16,185,129,.15);color:#6ee7b7}
+  .rk-conf-medium{background:rgba(245,158,11,.15);color:#fcd34d}
+  .rk-conf-low{background:rgba(100,116,139,.2);color:#a3b0c7}
+  .rk-ev-decide{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid #1e2740;flex-wrap:wrap}
+  .rk-decide-btns{display:flex;gap:4px;flex-wrap:wrap}
+  .rk-decide{font-size:11px;background:#161d33;border:1px solid #2a3352;color:#a7b4cf;border-radius:7px;padding:3px 9px;cursor:pointer}
+  .rk-decide:hover{border-color:#3b6bf0;color:#fff}
+  .rk-decide.on{background:#2559eb;border-color:#2559eb;color:#fff}
+  .rk-note-ok{display:flex;align-items:center;gap:8px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#8ff0c4;font-size:12px;padding:9px 11px;border-radius:10px;margin-top:4px}
+  .rk-note-ok svg{width:15px;height:15px}
+  .rk-unavail{display:flex;gap:10px;align-items:flex-start;background:rgba(100,116,139,.1);border:1px dashed #3a465f;border-radius:10px;padding:12px}
+  .rk-unavail svg{color:#94a3b8;width:18px;height:18px;margin-top:2px}
+  .rk-summary{font-size:13px;color:#c7d2e6;line-height:1.65;margin:0}
+  .rk-idlist{display:flex;flex-direction:column;gap:6px}
+  .rk-id-row{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--rk-sub);padding:4px 0;border-bottom:1px solid #1a2136}
+  .rk-id-row b{color:#e6ebf5;font-weight:600;text-align:right}
+  .rk-exp{padding:12px;background:#111830}
+  .rk-person{display:flex;gap:10px;align-items:flex-start;padding:12px;background:#111830}
+  .rk-avatar{width:38px;height:38px;border-radius:10px;background:#25314f;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#a9bce6;flex:none}
+  /* timeline */
+  .rk-timeline{position:relative;padding-left:8px}
+  .rk-tl-item{display:grid;grid-template-columns:14px 100px 1fr;gap:10px;align-items:start;padding:8px 0}
+  .rk-tl-dot{width:10px;height:10px;border-radius:50%;background:#3b6bf0;margin-top:4px;box-shadow:0 0 0 4px rgba(59,107,240,.15)}
+  .rk-tl-date{font-size:11.5px;color:var(--rk-mut);font-weight:600}
+  .rk-tl-body{font-size:12.5px;color:#c7d2e6;line-height:1.5}
+  /* misc */
+  .rk-disclaimer{display:flex;gap:8px;align-items:flex-start;margin-top:20px;font-size:11px;color:#7c8aa6;line-height:1.6;border-top:1px solid var(--rk-border);padding-top:14px}
+  .rk-disclaimer svg{width:14px;height:14px;color:#64748b;margin-top:2px;flex:none}
+  .rk-demo-bar{display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:12.5px;font-weight:600;padding:10px 12px;border-radius:10px}
+  .rk-demo-bar svg{color:#f59e0b}
+  .rk-demo-badge{background:#f59e0b;color:#1a1200;font-size:10.5px;font-weight:800;letter-spacing:.05em;padding:3px 9px;border-radius:999px}
 </style>
 </head>
 <body>
@@ -568,6 +733,39 @@ const IC = {
   plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',check:'<path d="M20 6 9 17l-5-5"/>',trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>',
   print:'<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M21 7h-5M21 7v5"/>',
+  shield:'<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',
+  shieldCheck:'<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  shieldX:'<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/>',
+  shieldAlert:'<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M12 8v4M12 15h.01"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/>',
+  network:'<circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M12 7v4M12 11l-6 5M12 11l6 5"/>',
+  building:'<path d="M3 21h18"/><path d="M5 21V6a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15"/><path d="M14 21V10h4a1 1 0 0 1 1 1v10"/><path d="M8 9h3M8 13h3M8 17h3"/>',
+  users:'<path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/><circle cx="9" cy="7" r="3"/><path d="M22 20v-1a4 4 0 0 0-3-3.85M16 4.5a3 3 0 0 1 0 5"/>',
+  landmark:'<path d="M3 21h18M4 10h16M12 3l8 4H4z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  ship:'<path d="M12 3v6M8 6h8M4 12l8-3 8 3M5 12v4a10 10 0 0 0 14 0v-4"/><path d="M3 20a3 3 0 0 0 3-1 3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 3 1"/>',
+  plane:'<path d="M10.2 3.5c.3-.6 1.3-.6 1.6 0l2.2 6.5 6.5 2.2c.6.3.6 1.3 0 1.6l-6.5 2.2-2.2 6.5c-.3.6-1.3.6-1.6 0"/><path d="M10.2 3.5 8 10 2 12l6 2 2 6"/>',
+  truck:'<path d="M3 6h11v9H3z"/><path d="M14 9h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/>',
+  newspaper:'<path d="M4 5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v13a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M8 8h6M8 12h6M8 16h4M18 8h2v10a2 2 0 0 1-2 2"/>',
+  database:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  fileSearch:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 11V8l-5-5H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"/><circle cx="16.5" cy="16.5" r="2.5"/><path d="M21 21l-2.3-2.3"/>',
+  alertTriangle:'<path d="M10.3 4l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  circleAlert:'<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  externalLink:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  download:'<path d="M12 3v12M7 11l5 5 5-5M5 21h14"/>',
+  save:'<path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M8 3v5h7M8 21v-7h8v7"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  gitBranch:'<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="7" r="2"/><path d="M6 7v10M18 9a5 5 0 0 1-5 5H9"/>',
+  mapPin:'<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  radar:'<circle cx="12" cy="12" r="9"/><path d="M12 12l6-3M12 12V4"/><circle cx="12" cy="12" r="4"/>',
+  scan:'<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/>',
+  filter:'<path d="M3 5h18l-7 8v6l-4-2v-4z"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  container:'<path d="M4 7h16v10H4z"/><path d="M8 7v10M12 7v10M16 7v10"/>',
+  arrowLR:'<path d="M7 8 3 12l4 4M17 8l4 4-4 4M3 12h18"/>',
+  star:'<path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 18l-5.8 3 1.1-6.5L2.6 9.8l6.5-.9z"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
 };
 const svg = k => `<svg viewBox="0 0 24 24">${IC[k]}</svg>`;
 
@@ -575,7 +773,7 @@ const svg = k => `<svg viewBox="0 0 24 24">${IC[k]}</svg>`;
 let section = "";   // "" = platform launcher; otherwise a module id (e.g. "docmaker")
 const SECTIONS = [
   { id:"docmaker", label:"Document Maker", desc:"Create invoices & contracts, and manage companies, templates and documents.", icon:"docs", enabled:true },
-  { id:"soon2", label:"Coming Soon", desc:"A future DrMonster module.", icon:"tpl",     enabled:false },
+  { id:"risk", label:"Company Risk Intelligence", desc:"Screen companies for sanctions, ownership, geographic exposure, trade relationships and compliance risk.", icon:"shield", enabled:true, group:"Intelligence" },
   { id:"soon3", label:"Coming Soon", desc:"A future DrMonster module.", icon:"co",      enabled:false },
   { id:"soon4", label:"Coming Soon", desc:"A future DrMonster module.", icon:"editdoc", enabled:false },
   { id:"soon5", label:"Coming Soon", desc:"A future DrMonster module.", icon:"trend",   enabled:false },
@@ -590,6 +788,12 @@ const MODULES = {
       ["Workspace",[["Overview","dashboard","dash"],["New Document","new","newdoc"],["Invoice Maker","invoice","editdoc"],["Contract Maker","contract","tpl"]]],
       ["Library",[["Companies","companies","co"],["Templates","templates","tpl"],["Documents","documents","docs"]]],
       ["System",[["Settings","settings","set"]]],
+    ],
+  },
+  risk: {
+    home: "risk-home",
+    nav: [
+      ["Intelligence",[["Overview","risk-home","radar"],["New Check","risk-new","scan"],["Investigations","risk-list","fileSearch"],["Watchlist","risk-watchlist","star"]]],
     ],
   },
 };
@@ -1256,6 +1460,365 @@ function viewEdit(){
     <tbody>${drafts.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number||"—")}${i.docType==="contract"?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">Contract</span>`:""}${i.revision>1?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}${i.source?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">from upload</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">Edit ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
   return topbar("Edit Document","Upload an existing invoice to revise it, or resume a draft.",["Workspace","Edit Document"],action)+`<div class="container">${drop}${list}</div>`;
 }
+/* ================= COMPANY RISK INTELLIGENCE (standalone module) =================
+   Separate from Document Maker. Evidence-first, no fabricated findings: results come
+   from the risk-screen Edge Function (sanctions provider + cited web research) and are
+   scored server-side. "Provider unavailable" is shown distinctly from "no match". */
+let risk = { form:{company:"",country:"",reg:"",website:"",address:""}, adv:false, loading:false, stage:0, error:"", result:null, invId:null, saved:false, list:null, watch:null, tab:"overview", filter:{}, node:null, demo:false, findings:[] };
+const RISK_STAGES=[["Resolving company identity","building"],["Corporate information search","database"],["Direct sanctions screening","shield"],["Alias screening","fileSearch"],["Ownership screening","users"],["Director / key-person screening","landmark"],["Country exposure analysis","globe"],["Trade relationship analysis","ship"],["Sanctioned-country relationship analysis","network"],["Adverse media search","newspaper"],["PEP screening","landmark"],["Evidence verification","fileSearch"],["Calculating risk","chart"]];
+const RISK_LM={low:{c:"#10b981",label:"LOW"},moderate:{c:"#f59e0b",label:"MODERATE"},high:{c:"#ef4444",label:"HIGH"},critical:{c:"#dc2626",label:"CRITICAL"},clear:{c:"#10b981",label:"CLEAR"},potential:{c:"#f59e0b",label:"POTENTIAL"},match:{c:"#dc2626",label:"MATCH"},unknown:{c:"#64748b",label:"UNKNOWN"},unavailable:{c:"#64748b",label:"UNAVAILABLE"}};
+function rlm(k){ return RISK_LM[k]||RISK_LM.unknown; }
+const RISK_FLAG={Iran:"🇮🇷","North Korea":"🇰🇵",Russia:"🇷🇺",Belarus:"🇧🇾",Syria:"🇸🇾",Cuba:"🇨🇺",Crimea:"🟥",Donetsk:"🟥",Luhansk:"🟥",Kherson:"🟥",Zaporizhzhia:"🟥",China:"🇨🇳","United Arab Emirates":"🇦🇪",UAE:"🇦🇪","Türkiye":"🇹🇷",Turkey:"🇹🇷",Germany:"🇩🇪","United States":"🇺🇸",USA:"🇺🇸","United Kingdom":"🇬🇧",Thailand:"🇹🇭"};
+const RISK_GEO={Iran:[53,32],"North Korea":[127,40],Russia:[95,60],Belarus:[27.9,53.7],Syria:[38,35],Cuba:[-79,21.5],Crimea:[34,45],Donetsk:[37.8,48],Luhansk:[39.3,48.6],Kherson:[32.6,46.6],Zaporizhzhia:[35.1,47.8],China:[104,35],"United Arab Emirates":[54,24],UAE:[54,24],"Türkiye":[35,39],Turkey:[35,39],Germany:[10,51],"United States":[-98,39],USA:[-98,39],"United Kingdom":[-1.5,53],Thailand:[101,15]};
+const EXP_CLASS={sanctions_relevant:{c:"#dc2626",label:"Sanctions-relevant exposure"},elevated:{c:"#f59e0b",label:"Elevated risk"},business:{c:"#2559eb",label:"Business exposure"}};
+function riskCategoryMeta(){ return {
+  direct_sanctions:{icon:"shieldX",label:"Direct Sanctions"}, country_exposure:{icon:"globe",label:"Country Exposure"},
+  relationship:{icon:"network",label:"Relationship Risk"}, ownership:{icon:"gitBranch",label:"Ownership Risk"},
+  pep:{icon:"landmark",label:"PEP Exposure"}, adverse_media:{icon:"newspaper",label:"Adverse Media"},
+  sanctioned_relations:{icon:"shieldAlert",label:"Related Sanctioned Entities"}, corporate:{icon:"building",label:"Corporate Verification"} }; }
+
+/* ---- risk visual components (lightweight SVG) ---- */
+function riskGauge(score,level,size){ size=size||150; const r=size/2-14, cx=size/2, cy=size/2, circ=2*Math.PI*r; const pct=Math.max(0,Math.min(100,score))/100; const col=rlm(level).c;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="transform:rotate(-90deg)"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#232a42" stroke-width="11"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct)}"/><g transform="rotate(90 ${cx} ${cy})"><text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="${size*0.26}" font-weight="800" fill="#f1f5f9">${score}</text><text x="${cx}" y="${cy+size*0.16}" text-anchor="middle" font-size="${size*0.08}" fill="#94a3b8">/ 100</text></g></svg>`; }
+function riskBadge(level,text){ const m=rlm(level); return `<span class="rk-badge" style="background:${m.c}22;color:${m.c};border:1px solid ${m.c}55">${svg(level==="clear"||level==="low"?"shieldCheck":level==="unavailable"||level==="unknown"?"circleAlert":"alertTriangle")}${esc(text||m.label)}</span>`; }
+function riskGeoMap(exposures){ const W=680,H=300; const proj=(lon,lat)=>[(lon+180)/360*W,(90-lat)/180*H];
+  const dots=(exposures||[]).map(e=>{ const g=RISK_GEO[e.name]; if(!g)return""; const [x,y]=proj(g[0],g[1]); const col=(EXP_CLASS[e.classification]||EXP_CLASS.business).c; return `<g class="rk-geo-dot" data-act="risk-node" data-id="c:${esc(e.name)}"><circle cx="${x}" cy="${y}" r="12" fill="${col}22"/><circle cx="${x}" cy="${y}" r="5.5" fill="${col}"><title>${esc(e.name)} — ${e.count} finding(s)</title></circle><text x="${x}" y="${y-12}" text-anchor="middle" font-size="10" fill="#cbd5e1">${esc(e.name)}</text></g>`; }).join("");
+  const noGeo=(exposures||[]).filter(e=>!RISK_GEO[e.name]);
+  return `<div class="rk-map"><svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet"><rect x="0" y="0" width="${W}" height="${H}" rx="12" fill="#0d1426"/><g stroke="#1c2540" stroke-width="1">${[60,120,180,240].map(y=>`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`).join("")}${[113,226,340,453,566].map(x=>`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`).join("")}</g>${dots||`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#475569" font-size="13">No mappable jurisdiction exposure identified</text>`}</svg>
+    ${noGeo.length?`<div style="margin-top:8px;font-size:11px;color:#94a3b8">Other: ${noGeo.map(e=>esc(e.name)).join(", ")}</div>`:""}</div>`; }
+function riskNetwork(result){ const nodes=[{id:"target",label:result.company,type:"target"}]; const edges=[];
+  (result.exposures||[]).forEach((e,i)=>{ nodes.push({id:"c"+i,label:e.name,type:"country",cls:e.classification}); edges.push({from:"target",to:"c"+i,label:(e.relationships||[]).join(", ")||"relationship"}); });
+  (result.sanctions&&result.sanctions.status==="ok"?result.sanctions.matches:[]).slice(0,4).forEach((m,i)=>{ nodes.push({id:"s"+i,label:m.entity,type:"sanction"}); edges.push({from:"target",to:"s"+i,label:"potential match"}); });
+  (result.research&&result.research.status==="ok"?result.research.findings:[]).filter(f=>f.related_entity).slice(0,6).forEach((f,i)=>{ nodes.push({id:"e"+i,label:f.related_entity,type:"entity"}); edges.push({from:"target",to:"e"+i,label:f.relationship||"relationship"}); });
+  const W=680,H=360,cx=W/2,cy=H/2; const outer=nodes.slice(1); const R=Math.min(W,H)/2-58;
+  const pos={target:[cx,cy]}; outer.forEach((n,i)=>{ const a=(i/outer.length)*2*Math.PI-Math.PI/2; pos[n.id]=[cx+R*Math.cos(a),cy+R*Math.sin(a)]; });
+  const col={target:"#2559eb",country:"#f59e0b",sanction:"#dc2626",entity:"#38bdf8"};
+  const nodeIcon={target:"building",country:"globe",sanction:"shieldAlert",entity:"network"};
+  const es=edges.map(e=>{ const a=pos[e.from],b=pos[e.to]; return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#2a3350" stroke-width="1.5"/>`; }).join("");
+  const ns=nodes.map(n=>{ const p=pos[n.id]; const c=n.type==="country"?(EXP_CLASS[n.cls]||{c:col.country}).c:col[n.type]; const rad=n.type==="target"?26:16;
+    return `<g class="rk-node" data-act="risk-node" data-id="n:${esc(n.id)}" style="cursor:pointer"><circle cx="${p[0]}" cy="${p[1]}" r="${rad}" fill="${c}22" stroke="${c}" stroke-width="2"><title>${esc(n.label)}</title></circle><text x="${p[0]}" y="${p[1]+rad+13}" text-anchor="middle" font-size="10.5" fill="#cbd5e1">${esc(n.label.length>22?n.label.slice(0,22)+"…":n.label)}</text></g>`; }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="background:#0d1426;border-radius:12px">${es}${ns}</svg>`; }
+function riskTimeline(findings){ const items=(findings||[]).filter(f=>f.evidence_date).sort((a,b)=>String(a.evidence_date).localeCompare(String(b.evidence_date)));
+  if(!items.length)return `<div class="rk-empty-sm">No dated evidence available to build a timeline.</div>`;
+  return `<div class="rk-timeline">${items.map(f=>`<div class="rk-tl-item"><div class="rk-tl-dot"></div><div class="rk-tl-date">${fdate(f.evidence_date)}</div><div class="rk-tl-body"><b>${esc(f.related_entity||f.subject||"")}</b> — ${esc(f.evidence||f.relationship||"")}</div></div>`).join("")}</div>`; }
+
+/* ---- risk data layer ---- */
+async function callRisk(payload){
+  await SB.ensureFresh();
+  const r=await fetch(`${SB.url}/functions/v1/risk-screen`,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB.key,Authorization:"Bearer "+(SB.session&&SB.session.access_token)},body:JSON.stringify(payload)});
+  const t=await r.text(); let d={}; try{ d=t?JSON.parse(t):{}; }catch(e){ d={error:t}; }
+  if(r.status===404) throw new Error("Risk engine isn't deployed yet. Deploy the risk-screen Edge Function — see SUPABASE_SETUP.md.");
+  if(r.status===401) throw new Error("Session expired. Sign in again.");
+  if(!r.ok) throw new Error(d.error||("Request failed ("+r.status+")"));
+  return d;
+}
+// Normalize a result payload into flat finding rows for evidence display + persistence.
+function deriveFindings(res){
+  const out=[]; const add=o=>out.push(Object.assign({id:uid("rf"),decision:"open",temporality:"unknown",directness:"unknown",confidence:"medium"},o));
+  (res.sanctions&&res.sanctions.status==="ok"?res.sanctions.matches:[]).forEach(m=>add({category:"sanctions",subject:res.company,related_entity:m.entity,country:m.country,relationship:"sanctions list entry",match_type:m.matchType,confidence:m.score>=0.9?"high":"medium",evidence:m.matchReason,source:m.list,source_url:m.sourceUrl}));
+  (res.research&&res.research.status==="ok"?res.research.findings:[]).forEach(f=>add({category:f.category||"relationship",subject:res.company,related_entity:f.related_entity,country:f.country,relationship:f.relationship,match_type:"info",temporality:f.temporality||"unknown",directness:f.directness||"unknown",confidence:f.confidence||"medium",evidence:f.evidence,source:f.source,source_url:f.source_url,evidence_date:f.evidence_date&&f.evidence_date!=="null"?f.evidence_date:null}));
+  (res.research&&res.research.status==="ok"?res.research.adverse_media:[]).forEach(a=>add({category:"adverse_media",subject:res.company,related_entity:a.headline,country:null,relationship:a.category,match_type:"info",confidence:a.confidence||"medium",evidence:a.summary,source:a.source,source_url:a.source_url,evidence_date:a.date&&a.date!=="null"?a.date:null,data:{stage:a.allegation_stage}}));
+  return out;
+}
+async function runRiskCheck(){
+  if(risk.loading)return; const f=risk.form; if(!f.company.trim()){ risk.error="Company name is required."; render(); return; }
+  risk.loading=true; risk.error=""; risk.result=null; risk.invId=null; risk.saved=false; risk.stage=0; render();
+  const timer=setInterval(()=>{ if(risk.stage<RISK_STAGES.length-1){ risk.stage++; const el=document.getElementById("rk-pipe"); if(el)el.innerHTML=riskPipeInner(); } },520);
+  try{
+    let res;
+    if(risk.demo){ await new Promise(r=>setTimeout(r,2600)); res=demoResult(f.company,f.country); }
+    else res=await callRisk({ company:f.company.trim(), country:f.country.trim(), registration:f.reg.trim(), website:f.website.trim(), address:f.address.trim() });
+    clearInterval(timer); risk.stage=RISK_STAGES.length-1; risk.loading=false;
+    risk.result=res; risk.findings=deriveFindings(res); risk.tab="overview"; risk.node=null;
+    render(); window.scrollTo(0,0);
+  }catch(err){ clearInterval(timer); risk.loading=false; risk.error=err.message||String(err); render(); }
+}
+async function riskLoadList(){ try{ const rows=await SB.select("risk_investigations","select=id,company_name,country,risk_score,risk_level,direct_sanctions,country_exposure,data_coverage,created_at,watchlisted&order=created_at.desc"); risk.list=rows||[]; }catch(e){ risk.list=[]; } }
+async function riskLoadWatch(){ try{ const rows=await SB.select("risk_watchlist","select=*&order=created_at.desc"); risk.watch=rows||[]; }catch(e){ risk.watch=[]; } }
+async function riskSave(){
+  const res=risk.result; if(!res||risk.demo){ if(risk.demo)toast("Demo investigations are not saved.",true); return; }
+  if(busy)return; busy=true; render();
+  try{
+    const fc=(res.research&&res.research.status==="ok")?(res.research.findings||[]).length:0;
+    const [inv]=await SB.insert("risk_investigations",{ user_id:SB.uid, company_name:res.company, country:res.country||null, registration_number:risk.form.reg||null, website:risk.form.website||null, address:risk.form.address||null,
+      status:"complete", risk_score:res.score, risk_level:res.level, confidence:res.confidence, data_coverage:res.dataCoverage, direct_sanctions:res.directSanctions, country_exposure:res.countryExposure, summary:res.summary, providers:res.providers, result:res });
+    // persist findings rows (evidence + false-positive decisions)
+    const rows=risk.findings.map(x=>({ user_id:SB.uid, investigation_id:inv.id, category:x.category, subject:x.subject, related_entity:x.related_entity||null, country:x.country||null, relationship:x.relationship||null, match_type:x.match_type||null, temporality:x.temporality||null, directness:x.directness||null, confidence:x.confidence||null, evidence:x.evidence||null, source:x.source||null, source_url:x.source_url||null, evidence_date:x.evidence_date||null, decision:x.decision||"open", data:x.data||null }));
+    let saved=risk.findings;
+    if(rows.length){ const ins=await SB.insert("risk_findings",rows); if(Array.isArray(ins)&&ins.length===rows.length) saved=ins.map(docFindingFromRow); }
+    risk.findings=saved; risk.invId=inv.id; risk.saved=true; busy=false; risk.list=null; render(); toast("Investigation saved.");
+  }catch(err){ busy=false; render(); toast("Could not save: "+(err.message||err),true); }
+}
+function docFindingFromRow(r){ return { id:r.id, category:r.category, subject:r.subject, related_entity:r.related_entity, country:r.country, relationship:r.relationship, match_type:r.match_type, temporality:r.temporality, directness:r.directness, confidence:r.confidence, evidence:r.evidence, source:r.source, source_url:r.source_url, evidence_date:r.evidence_date, decision:r.decision||"open", decision_note:r.decision_note, data:r.data }; }
+async function riskOpen(id){
+  try{
+    const rows=await SB.select("risk_investigations",`select=*&id=eq.${id}`); const inv=rows&&rows[0]; if(!inv){ toast("Investigation not found.",true); return; }
+    const frows=await SB.select("risk_findings",`select=*&investigation_id=eq.${id}&order=created_at`);
+    risk.result=inv.result||{ company:inv.company_name, country:inv.country, score:inv.risk_score, level:inv.risk_level, confidence:inv.confidence, dataCoverage:inv.data_coverage, directSanctions:inv.direct_sanctions, countryExposure:inv.country_exposure, summary:inv.summary, providers:inv.providers, exposures:[], factors:[], breakdown:{}, sanctions:{status:"unknown",matches:[]}, research:{status:"unknown",findings:[],people:[],adverse_media:[]}, coverageDomains:[] };
+    risk.findings=(frows||[]).map(docFindingFromRow); risk.invId=id; risk.saved=true; risk.demo=false; risk.tab="overview"; risk.node=null;
+    section="risk"; route="risk-view"; window.scrollTo(0,0); render();
+  }catch(err){ toast("Could not open: "+(err.message||err),true); }
+}
+async function riskDelete(id){
+  const inv=(risk.list||[]).find(x=>x.id===id); const name=inv?inv.company_name:"this investigation";
+  if(!confirm(`Delete the investigation for "${name}"? This permanently removes it and its findings. This action cannot be undone.`))return;
+  try{ await SB.remove("risk_investigations",id); risk.list=(risk.list||[]).filter(x=>x.id!==id); if(risk.invId===id){ risk.result=null; risk.invId=null; route="risk-list"; } render(); toast("Investigation deleted successfully."); }
+  catch(err){ toast("Could not delete: "+(err.message||err),true); }
+}
+function riskRerun(companyName,country){ risk.form={company:companyName||"",country:country||"",reg:"",website:"",address:""}; risk.result=null; risk.invId=null; risk.saved=false; risk.error=""; route="risk-new"; render(); setTimeout(runRiskCheck,50); }
+async function riskDecision(fid,decision){
+  const fnd=risk.findings.find(x=>x.id===fid); if(!fnd)return; fnd.decision=decision;
+  if(risk.invId&&!risk.demo&&!String(fid).startsWith("rf_")){ try{ await SB.update("risk_findings",fid,{decision,decided_at:new Date().toISOString()}); }catch(e){ toast("Could not save decision: "+e.message,true); } }
+  render();
+}
+async function riskWatchToggle(){
+  const res=risk.result; if(!res||risk.demo)return;
+  try{ await SB.insert("risk_watchlist",{ user_id:SB.uid, investigation_id:risk.invId||null, company_name:res.company, country:res.country||null, last_score:res.score, last_level:res.level }); risk.watch=null; toast(res.company+" added to watchlist."); }
+  catch(err){ toast("Could not add to watchlist: "+(err.message||err),true); }
+}
+async function riskWatchRemove(id){ try{ await SB.remove("risk_watchlist",id); risk.watch=(risk.watch||[]).filter(x=>x.id!==id); render(); toast("Removed from watchlist."); }catch(e){ toast("Could not remove: "+e.message,true); } }
+
+/* ---- DEMO fixture (clearly labelled sample data; never saved, never a real finding) ---- */
+function demoResult(company,country){
+  return { company:company||"Demo Company Ltd", country:country||"United Kingdom", generatedAt:new Date().toISOString(), demo:true,
+    score:63, level:"high", confidence:"medium", dataCoverage:70, directSanctions:"clear", countryExposure:"high",
+    sanctions:{ status:"ok", label:"Sanctions screening (demo)", checkedAt:new Date().toISOString(), matches:[{entity:"Sample Similar Name LLC (demo)",list:"Demo list",score:0.74,matchType:"potential",matchReason:"Name similarity — demo potential match requiring review.",sourceUrl:"https://www.opensanctions.org/",country:"Russia",aliases:[]}] },
+    research:{ status:"ok", label:"Web research (demo)", checkedAt:new Date().toISOString(),
+      findings:[{category:"relationship",subject:company,related_entity:"Demo Distributor OOO (sample)",country:"Russia",relationship:"distributor",temporality:"current",directness:"direct",confidence:"high",evidence:"Sample announcement identifies the entity as a Russian distributor (demo data).",source:"Demo source",source_url:"https://example.com/demo",evidence_date:"2024-03-14"},
+        {category:"trade",subject:company,related_entity:"Demo Supplier (sample)",country:"Iran",relationship:"supplier",temporality:"historical",directness:"indirect",confidence:"low",evidence:"One historical supplier relationship (demo data).",source:"Demo source",source_url:"https://example.com/demo2",evidence_date:"2019-06-01"}],
+      people:[{name:"Demo Director (sample)",role:"director",nationality:"—",pep:"unknown",confidence:"low",source_url:"https://example.com/demo3",evidence:"Listed as a director (demo)."}],
+      adverse_media:[{headline:"Demo article referencing export controls (sample)",category:"export_control",allegation_stage:"allegation",source:"Demo News",source_url:"https://example.com/news",date:"2023-11-02",confidence:"medium",summary:"Demo adverse-media item — allegation only."}] },
+    exposures:[{name:"Russia",program:"sectoral",count:2,relationships:["distributor"],current:true,historical:false,classification:"sanctions_relevant"},{name:"Iran",program:"comprehensive",count:1,relationships:["supplier"],current:false,historical:true,classification:"elevated"}],
+    breakdown:{country_exposure:40,adverse_media:13,direct_sanctions:10}, factors:[{category:"country_exposure",label:"Russia — distributor (current)",points:20,detail:"demo"},{category:"country_exposure",label:"Iran — supplier (historical)",points:16,detail:"demo"},{category:"adverse_media",label:"Adverse media — export_control (allegation)",points:7,detail:"demo"},{category:"direct_sanctions",label:"Potential direct sanctions match",points:10,detail:"demo"}],
+    mitigating:[{label:"No confirmed direct sanctions match in the lists checked (demo)"}],
+    coverageDomains:[{key:"sanctions",label:"Sanctions lists",ok:true},{key:"corporate",label:"Corporate & ownership",ok:true},{key:"directors",label:"Directors & key people",ok:true},{key:"trade",label:"Trade & shipping",ok:false},{key:"adverse_media",label:"Adverse media",ok:true}],
+    providers:[{key:"sanctions",label:"Sanctions screening (demo)",status:"ok",checkedAt:new Date().toISOString()},{key:"research",label:"Web research (demo)",status:"ok",checkedAt:new Date().toISOString()}],
+    jurisdictions:[], summary:"DEMO — sample data for interface preview only. This is not a real investigation and no real findings are shown.", config:{thresholds:RISK_STAGES?{low:24,moderate:49,high:74}:{}} };
+}
+
+/* ---- risk header (dark) ---- */
+function rkHeader(title,sub,actions){ return `<div class="rk-topbar"><div class="rk-topbar-in"><div><div class="rk-crumb">${svg("shield")}<span>Company Risk Intelligence</span></div><h1 class="rk-title">${esc(title)}</h1>${sub?`<p class="rk-sub">${esc(sub)}</p>`:""}</div><div class="rk-actions">${actions||""}</div></div></div>`; }
+function riskPipeInner(){ return RISK_STAGES.map(([label,ic],i)=>{ const st=i<risk.stage?"done":i===risk.stage?"active":"todo"; return `<div class="rk-stage rk-${st}">${st==="done"?svg("check"):st==="active"?`<span class="rk-spin"></span>`:svg(ic)}<span>${esc(label)}</span></div>`; }).join(""); }
+
+/* ---- risk views ---- */
+function viewRiskHome(){
+  if(risk.list===null){ riskLoadList().then(render); }
+  const list=risk.list||[];
+  const high=list.filter(x=>x.risk_level==="high"||x.risk_level==="critical").length;
+  const crit=list.filter(x=>x.risk_level==="critical").length;
+  const potential=list.filter(x=>x.direct_sanctions==="potential"||x.direct_sanctions==="match").length;
+  const countries=new Set(); list.forEach(x=>{ if(x.country_exposure==="high"||x.country_exposure==="critical") countries.add(x.id); });
+  const stat=(ic,label,val,hint,col)=>`<div class="rk-card rk-stat"><div class="rk-stat-top"><span class="rk-stat-ic" style="color:${col||'#60a5fa'}">${svg(ic)}</span></div><div class="rk-stat-val">${val}</div><div class="rk-stat-lbl">${label}</div>${hint?`<div class="rk-stat-hint">${hint}</div>`:""}</div>`;
+  if(risk.list!==null && !list.length){
+    return `<div class="rk-root">${rkHeader("Overview","Company sanctions, ownership, geographic exposure, trade and adverse-media intelligence.")}
+      <div class="rk-body"><div class="rk-empty">
+        <span class="rk-empty-ic">${svg("radar")}</span>
+        <h2>Start your first company investigation</h2>
+        <p>Screen a company against sanctions lists, ownership, geographic exposure, trade relationships and adverse media — with cited evidence and an explainable risk score.</p>
+        <button class="btn rk-btn-primary" data-act="risk-go-new">${svg("scan")}Run company check</button>
+      </div></div></div>`;
+  }
+  return `<div class="rk-root">${rkHeader("Overview","Company sanctions, ownership, geographic exposure, trade and adverse-media intelligence.",`<button class="btn rk-btn-primary" data-act="risk-go-new">${svg("scan")}New check</button>`)}
+    <div class="rk-body">
+      <div class="rk-grid rk-grid-4">
+        ${stat("building","Companies screened",list.length,"","#60a5fa")}
+        ${stat("alertTriangle","High-risk companies",high,"","#f59e0b")}
+        ${stat("circleAlert","Critical findings",crit,"","#dc2626")}
+        ${stat("shieldAlert","Potential sanctions matches",potential,"require review","#f59e0b")}
+      </div>
+      <div class="rk-grid" style="grid-template-columns:2fr 1fr;margin-top:16px">
+        <div class="rk-card"><div class="rk-card-h">${svg("fileSearch")}<h3>Recent investigations</h3><button class="btn rk-btn-ghost" data-route="risk-list" style="margin-left:auto">View all ${svg("arrow")}</button></div>
+          <table class="rk-table"><thead><tr><th>Company</th><th>Country</th><th>Date</th><th>Sanctions</th><th class="num">Risk</th></tr></thead><tbody>
+          ${list.slice(0,6).map(x=>`<tr data-act="risk-open" data-id="${x.id}" style="cursor:pointer"><td style="font-weight:600">${esc(x.company_name)}</td><td>${RISK_FLAG[x.country]||""} ${esc(x.country||"—")}</td><td>${fdate(x.created_at)}</td><td>${riskBadge(x.direct_sanctions==="clear"?"clear":x.direct_sanctions==="match"?"match":x.direct_sanctions==="potential"?"potential":"unknown")}</td><td class="num">${riskBadge(x.risk_level,String(x.risk_score))}</td></tr>`).join("")}
+          </tbody></table></div>
+        <div class="rk-card"><div class="rk-card-h">${svg("star")}<h3>Watchlist</h3></div>${riskWatchInline()}</div>
+      </div>
+    </div></div>`;
+}
+function riskWatchInline(){ if(risk.watch===null){ riskLoadWatch().then(render); return `<div class="rk-empty-sm">Loading…</div>`; } if(!risk.watch.length)return `<div class="rk-empty-sm">${svg("star")} No companies on the watchlist yet.</div>`; return `<div style="display:flex;flex-direction:column;gap:8px">${risk.watch.slice(0,6).map(w=>`<div class="rk-watch-row"><div><div style="font-weight:600;font-size:13px">${esc(w.company_name)}</div><div style="font-size:11px;color:#94a3b8">${RISK_FLAG[w.country]||""} ${esc(w.country||"—")}</div></div>${w.last_level?riskBadge(w.last_level,String(w.last_score||"")):""}</div>`).join("")}</div>`; }
+
+function viewRiskNew(){
+  const f=risk.form;
+  if(risk.loading){
+    return `<div class="rk-root">${rkHeader("Running investigation","DrMonster is screening "+esc(f.company)+" across sanctions, ownership, exposure, trade and media.")}
+      <div class="rk-body"><div class="rk-card" style="max-width:640px;margin:0 auto"><div class="rk-card-h">${svg("radar")}<h3>Investigation pipeline</h3></div>
+      <div id="rk-pipe" class="rk-pipe">${riskPipeInner()}</div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:14px">Providers run in parallel. If a data source is unavailable, the report will state reduced coverage — it will never invent findings.</div></div></div></div>`;
+  }
+  if(risk.result){ return viewRiskView(); }
+  const inp=(k,label,ph,req)=>`<div><label class="rk-lbl">${label}${req?' <span style="color:#f87171">*</span>':' <span style="color:#64748b">(optional)</span>'}</label><input class="rk-inp" data-rkf="${k}" value="${esc(f[k])}" placeholder="${esc(ph)}"></div>`;
+  return `<div class="rk-root">${rkHeader("Company Risk Intelligence","Screen companies for sanctions, ownership, geographic exposure, trade relationships and compliance risk.")}
+    <div class="rk-body"><div class="rk-card rk-search" style="max-width:820px;margin:0 auto">
+      <div class="rk-search-head"><span class="rk-search-ic">${svg("scan")}</span><div><div class="rk-search-title">Run a full risk check</div><div class="rk-search-sub">Enter a company to screen. Country/jurisdiction strongly improves accuracy.</div></div></div>
+      ${risk.error?`<div class="rk-err">${svg("alertTriangle")}${esc(risk.error)}</div>`:""}
+      <div class="rk-grid rk-grid-2" style="margin-top:16px">
+        ${inp("company","Company name","e.g. Acme Trading Ltd",true)}
+        ${inp("country","Country / jurisdiction","e.g. United Kingdom")}
+      </div>
+      <button class="rk-adv-toggle" data-act="risk-adv">${risk.adv?"▾":"▸"} Advanced search</button>
+      ${risk.adv?`<div class="rk-grid rk-grid-2" style="margin-top:6px">${inp("reg","Registration number","Company reg. no.")}${inp("website","Website","acme.com")}<div style="grid-column:1/-1">${inp("address","Known address","Street, city, country")}</div></div>`:""}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap">
+        <label class="rk-demo"><input type="checkbox" data-act="risk-demo" ${risk.demo?"checked":""}> Demo mode <span>(sample data for a visual preview — not a real investigation)</span></label>
+        <button class="btn rk-btn-primary rk-btn-lg" data-act="risk-run">${svg("shield")}Run Full Risk Check</button>
+      </div>
+    </div></div></div>`;
+}
+function viewRiskList(){
+  if(risk.list===null){ riskLoadList().then(render); return `<div class="rk-root">${rkHeader("Investigations")}<div class="rk-body"><div class="rk-empty-sm">Loading…</div></div></div>`; }
+  const list=risk.list;
+  return `<div class="rk-root">${rkHeader("Investigations","Saved company risk investigations.",`<button class="btn rk-btn-primary" data-act="risk-go-new">${svg("scan")}New check</button>`)}
+    <div class="rk-body">${!list.length?`<div class="rk-empty"><span class="rk-empty-ic">${svg("fileSearch")}</span><h2>No saved investigations</h2><p>Run a company check and save it to build your investigation history.</p><button class="btn rk-btn-primary" data-act="risk-go-new">${svg("scan")}Run company check</button></div>`
+    :`<div class="rk-card"><table class="rk-table"><thead><tr><th>Company</th><th>Country</th><th>Date</th><th>Direct sanctions</th><th>Country exposure</th><th class="num">Risk</th><th></th></tr></thead><tbody>
+      ${list.map(x=>`<tr data-act="risk-open" data-id="${x.id}" style="cursor:pointer"><td style="font-weight:600">${esc(x.company_name)}</td><td>${RISK_FLAG[x.country]||""} ${esc(x.country||"—")}</td><td>${fdate(x.created_at)}</td><td>${riskBadge(x.direct_sanctions==="clear"?"clear":x.direct_sanctions==="match"?"match":x.direct_sanctions==="potential"?"potential":"unknown")}</td><td>${riskBadge(x.country_exposure==="high"||x.country_exposure==="critical"?"high":x.country_exposure==="moderate"?"moderate":x.country_exposure==="clear"?"clear":"unknown")}</td><td class="num">${riskBadge(x.risk_level,String(x.risk_score))}</td>
+      <td class="num"><div style="display:inline-flex;gap:2px"><button class="btn rk-btn-ghost" title="Re-run" data-act="risk-rerun" data-id="${x.id}">${svg("refresh")}</button><button class="btn rk-btn-ghost" title="Delete" data-act="risk-del" data-id="${x.id}" style="color:#f87171">${svg("trash")}</button></div></td></tr>`).join("")}
+    </tbody></table></div>`}</div></div>`;
+}
+function viewRiskWatch(){
+  if(risk.watch===null){ riskLoadWatch().then(render); return `<div class="rk-root">${rkHeader("Watchlist")}<div class="rk-body"><div class="rk-empty-sm">Loading…</div></div></div>`; }
+  const w=risk.watch;
+  return `<div class="rk-root">${rkHeader("Watchlist","Companies flagged for ongoing attention. Automated monitoring is not active yet — re-run checks manually.")}
+    <div class="rk-body">${!w.length?`<div class="rk-empty"><span class="rk-empty-ic">${svg("star")}</span><h2>Watchlist is empty</h2><p>Add a company from any completed investigation to keep it here for future re-checks.</p></div>`
+    :`<div class="rk-grid rk-grid-3">${w.map(x=>`<div class="rk-card"><div class="rk-card-h">${svg("building")}<h3 style="font-size:14px">${esc(x.company_name)}</h3></div><div style="font-size:12px;color:#94a3b8">${RISK_FLAG[x.country]||""} ${esc(x.country||"—")} · added ${fdate(x.created_at)}</div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">${x.last_level?riskBadge(x.last_level,x.last_level.toUpperCase()+" · "+(x.last_score||0)):riskBadge("unknown")}<div style="display:flex;gap:6px">${x.investigation_id?`<button class="btn rk-btn-ghost" data-act="risk-open" data-id="${x.investigation_id}">${svg("eye")}</button>`:""}<button class="btn rk-btn-ghost" data-act="risk-watch-rm" data-id="${x.id}" style="color:#f87171">${svg("x")}</button></div></div></div>`).join("")}</div>`}</div></div>`;
+}
+
+/* ---- results dashboard ---- */
+function riskTopCards(res){
+  const findings=risk.findings; const cnt=c=>findings.filter(f=>f.category===c).length;
+  const sanc=res.sanctions||{status:"unknown",matches:[]};
+  const sancPot=sanc.status==="ok"?(sanc.matches||[]).length:0;
+  const card=(icon,title,level,levelText,lines)=>`<div class="rk-card rk-topcard"><div class="rk-topcard-h"><span class="rk-topcard-ic" style="color:${rlm(level).c}">${svg(icon)}</span>${riskBadge(level,levelText)}</div><div class="rk-topcard-t">${title}</div><div class="rk-topcard-lines">${lines.map(l=>`<div>${l}</div>`).join("")}</div></div>`;
+  const exp=res.exposures||[]; const sr=exp.filter(e=>e.classification==="sanctions_relevant").length;
+  const media=res.research&&res.research.status==="ok"?res.research.adverse_media:[];
+  const rels=res.research&&res.research.status==="ok"?res.research.findings.filter(f=>f.category==="relationship"||f.category==="trade"):[];
+  return `<div class="rk-grid rk-grid-4">
+    ${card("shieldX","Direct Sanctions", sanc.status!=="ok"?"unavailable":(sancPot?"potential":"clear"), sanc.status!=="ok"?"UNAVAILABLE":(sancPot?"REVIEW":"NO MATCH"), sanc.status!=="ok"?["Provider not available"]:["0 confirmed matches",`${sancPot} potential match(es) to review`])}
+    ${card("globe","Country Exposure", res.countryExposure==="unavailable"?"unavailable":res.countryExposure==="high"?"high":res.countryExposure==="moderate"?"moderate":"clear", (res.countryExposure||"unknown").toUpperCase(), res.research&&res.research.status==="ok"?[`${sr} sanctions-relevant jurisdiction(s)`,`${exp.length} exposed jurisdiction(s)`]:["Research unavailable"])}
+    ${card("network","Relationship Risk", rels.length?(sr?"high":"moderate"):"clear", rels.length?(sr?"HIGH":"MODERATE"):"CLEAR", [`${rels.length} relationship finding(s)`])}
+    ${card("newspaper","Adverse Media", media.length?(media.some(m=>m.confidence==="high")?"high":"moderate"):"clear", media.length?"REVIEW":"CLEAR", res.research&&res.research.status==="ok"?[`${media.length} potentially relevant article(s)`]:["Research unavailable"])}
+  </div>`;
+}
+function riskCoverage(res){ const d=res.coverageDomains||[]; return `<div class="rk-card"><div class="rk-card-h">${svg("database")}<h3>Data coverage</h3><span style="margin-left:auto;font-weight:800;font-size:18px;color:${res.dataCoverage>=80?'#10b981':res.dataCoverage>=50?'#f59e0b':'#ef4444'}">${res.dataCoverage}%</span></div>
+  <div style="display:flex;flex-direction:column;gap:6px">${d.map(x=>`<div class="rk-cov-row"><span>${x.label}</span><span class="rk-cov-${x.ok?'ok':'no'}">${x.ok?svg("check")+"Checked":svg("circleAlert")+"Unavailable"}</span></div>`).join("")}</div>
+  <div style="font-size:11px;color:#64748b;margin-top:8px">Coverage is shown separately from the risk score so unavailable sources never inflate confidence.</div></div>`; }
+function riskBreakdown(res){ const b=res.breakdown||{}; const keys=Object.keys(b); const max=Math.max(1,...keys.map(k=>b[k])); const meta=riskCategoryMeta();
+  if(!keys.length)return `<div class="rk-empty-sm">No scored risk factors.</div>`;
+  return `<div style="display:flex;flex-direction:column;gap:10px">${keys.sort((a,c)=>b[c]-b[a]).map(k=>{ const m=meta[k]||{icon:"circleAlert",label:k}; return `<div class="rk-brk" data-act="risk-tab" data-id="${k==='country_exposure'?'exposure':k==='adverse_media'?'media':k==='direct_sanctions'?'sanctions':'evidence'}" style="cursor:pointer"><div class="rk-brk-top"><span>${svg(m.icon)} ${esc(m.label)}</span><span style="font-weight:700">+${b[k]}</span></div><div class="rk-bar"><div class="rk-bar-fill" style="width:${Math.round(b[k]/max*100)}%"></div></div></div>`; }).join("")}</div>
+  <div style="font-size:11px;color:#64748b;margin-top:10px">${svg("eye")} Click a category to see the findings that contributed. Score = sum of weighted factors (server-side, configurable).</div>`; }
+function evidenceCard(f){ const dm={confirmed:{c:"#dc2626",t:"Confirmed"},false_positive:{c:"#10b981",t:"False positive"},needs_review:{c:"#f59e0b",t:"Needs review"},dismissed:{c:"#64748b",t:"Dismissed"},potential:{c:"#f59e0b",t:"Potential"},open:{c:"#60a5fa",t:"Open"}}[f.decision]||{c:"#60a5fa",t:"Open"};
+  return `<div class="rk-ev"><div class="rk-ev-h"><span class="rk-chip">${esc((f.category||"").replace(/_/g," "))}</span>${f.country?`<span class="rk-chip">${RISK_FLAG[f.country]||""} ${esc(f.country)}</span>`:""}${f.temporality&&f.temporality!=="unknown"?`<span class="rk-chip">${svg("clock")}${esc(f.temporality)}</span>`:""}${f.directness&&f.directness!=="unknown"?`<span class="rk-chip">${esc(f.directness)}</span>`:""}<span class="rk-conf rk-conf-${f.confidence||'low'}">${esc((f.confidence||"low").replace("_"," "))} confidence</span></div>
+    <div class="rk-ev-title">${esc(f.related_entity||f.relationship||f.subject||"Finding")}</div>
+    ${f.evidence?`<div class="rk-ev-body">${esc(f.evidence)}</div>`:""}
+    <div class="rk-ev-meta">${f.source?`<span>${svg("fileSearch")}${esc(f.source)}</span>`:""}${f.evidence_date?`<span>${svg("clock")}${fdate(f.evidence_date)}</span>`:""}${f.source_url?`<a href="${esc(f.source_url)}" target="_blank" rel="noopener" class="rk-src-link">${svg("externalLink")}Open source</a>`:""}</div>
+    <div class="rk-ev-decide"><span style="color:${dm.c};font-weight:600;font-size:11px">${dm.t}</span><div class="rk-decide-btns">${[["confirmed","Confirm"],["potential","Potential"],["false_positive","False positive"],["needs_review","Review"],["dismissed","Dismiss"]].map(([v,l])=>`<button class="rk-decide ${f.decision===v?'on':''}" data-act="risk-decide" data-id="${f.id}" data-v="${v}">${l}</button>`).join("")}</div></div></div>`; }
+function viewRiskView(){
+  const res=risk.result; if(!res)return viewRiskNew();
+  const tabs=[["overview","Overview","radar"],["sanctions","Sanctions","shield"],["exposure","Country Exposure","globe"],["relationships","Relationships","network"],["people","People","users"],["media","Adverse Media","newspaper"],["evidence","Evidence","fileSearch"],["sources","Sources","database"],["timeline","Timeline","clock"]];
+  const findings=risk.findings;
+  const actions=`${risk.demo?`<span class="rk-demo-badge">DEMO</span>`:`${risk.saved?`<button class="btn rk-btn-ghost" data-act="risk-watch">${svg("star")}Watch</button>`:`<button class="btn rk-btn-secondary" data-act="risk-save" ${busy?'disabled':''}>${svg("save")}Save</button>`}`}<button class="btn rk-btn-secondary" data-act="risk-report">${svg("download")}Report</button><button class="btn rk-btn-ghost" data-act="risk-go-new">${svg("scan")}New</button>`;
+  let tabHtml="";
+  if(risk.tab==="overview") tabHtml=riskTabOverview(res);
+  else if(risk.tab==="sanctions") tabHtml=riskTabSanctions(res);
+  else if(risk.tab==="exposure") tabHtml=riskTabExposure(res);
+  else if(risk.tab==="relationships") tabHtml=riskTabRelationships(res);
+  else if(risk.tab==="people") tabHtml=riskTabPeople(res);
+  else if(risk.tab==="media") tabHtml=riskTabMedia(res);
+  else if(risk.tab==="evidence") tabHtml=`<div class="rk-card"><div class="rk-card-h">${svg("fileSearch")}<h3>Evidence & findings</h3><span style="margin-left:auto;font-size:12px;color:#94a3b8">${findings.length} finding(s)</span></div>${findings.length?`<div class="rk-ev-list">${findings.map(evidenceCard).join("")}</div>`:`<div class="rk-empty-sm">No findings recorded.</div>`}</div>`;
+  else if(risk.tab==="sources") tabHtml=riskTabSources(res);
+  else if(risk.tab==="timeline") tabHtml=`<div class="rk-card"><div class="rk-card-h">${svg("clock")}<h3>Evidence timeline</h3></div>${riskTimeline(findings)}</div>`;
+  return `<div class="rk-root">${rkHeader(res.company,(RISK_FLAG[res.country]||"")+" "+(res.country||"—")+(risk.invId?" · ID "+String(risk.invId).slice(0,8):"")+" · "+fdate(res.generatedAt),actions)}
+    <div class="rk-body">
+      ${risk.demo?`<div class="rk-demo-bar">${svg("alertTriangle")} DEMO MODE — sample data for interface preview only. These are not real findings and will not be saved.</div>`:""}
+      ${riskCritical(res)}
+      <div class="rk-grid" style="grid-template-columns:280px 1fr;margin-top:16px">
+        <div class="rk-card rk-gauge-card"><div class="rk-gauge">${riskGauge(res.score,res.level,160)}</div><div class="rk-gauge-lvl" style="color:${rlm(res.level).c}">${rlm(res.level).label} RISK</div>
+          <div class="rk-gauge-sub"><span>Confidence: <b>${esc((res.confidence||"low").replace("_"," "))}</b></span><span>Coverage: <b>${res.dataCoverage}%</b></span></div></div>
+        <div>${riskTopCards(res)}</div>
+      </div>
+      <div class="rk-tabs">${tabs.map(([k,l,ic])=>`<button class="rk-tab ${risk.tab===k?'on':''}" data-act="risk-tab" data-id="${k}">${svg(ic)}${l}</button>`).join("")}</div>
+      <div class="rk-tabpane">${tabHtml}</div>
+      <div class="rk-disclaimer">${svg("circleAlert")} DrMonster Company Risk Intelligence provides decision-support information based on the data sources available at the time of the investigation. Results may contain incomplete information, false positives or false negatives and are not legal advice or a definitive sanctions determination. Material findings should be independently verified before any compliance, banking, contractual or legal decision.</div>
+    </div></div>`;
+}
+function riskCritical(res){ const ds=res.directSanctions; const ce=res.countryExposure;
+  const chip=(label,k)=>`<div class="rk-crit-item"><div class="rk-crit-k">${label}</div>${riskBadge(k,rlm(k).label)}</div>`;
+  return `<div class="rk-card rk-crit"><div class="rk-crit-lead">${svg("shieldAlert")}<div><b>Sanctioned company vs. sanctions-related exposure — these are not the same.</b><div style="font-size:12px;color:#94a3b8">A company can have no direct designation yet still carry exposure through relationships or jurisdictions.</div></div></div>
+    <div class="rk-crit-row">${chip("Direct sanctions",ds==="clear"?"clear":ds==="match"?"match":ds==="potential"?"potential":"unavailable")}${chip("Country exposure",ce==="high"||ce==="critical"?"high":ce==="moderate"?"moderate":ce==="clear"?"clear":"unavailable")}${chip("Sanctioned-entity relationships",(res.exposures||[]).some(e=>e.classification==="sanctions_relevant")?"moderate":"clear")}</div></div>`; }
+function riskTabOverview(res){
+  return `<div class="rk-grid" style="grid-template-columns:1.4fr 1fr">
+    <div class="rk-card"><div class="rk-card-h">${svg("fileSearch")}<h3>Executive summary</h3></div><p class="rk-summary">${esc(res.summary||"")}</p></div>
+    ${riskCoverage(res)}
+    <div class="rk-card"><div class="rk-card-h">${svg("chart")}<h3>Risk breakdown</h3></div>${riskBreakdown(res)}</div>
+    <div class="rk-card"><div class="rk-card-h">${svg("building")}<h3>Company identity</h3></div>
+      <div class="rk-idlist">${[["Company",res.company],["Country",(RISK_FLAG[res.country]||"")+" "+(res.country||"—")],["Registration",risk.form.reg||"—"],["Website",risk.form.website||"—"]].map(r=>`<div class="rk-id-row"><span>${r[0]}</span><b>${esc(r[1])}</b></div>`).join("")}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:8px">Fields shown are as entered / resolved. Unverified fields are marked “—”.</div></div>
+  </div>`;
+}
+function riskTabSanctions(res){ const s=res.sanctions||{status:"unknown",matches:[]};
+  if(s.status!=="ok") return `<div class="rk-card">${riskUnavail("Direct sanctions screening",s)}</div>`;
+  const m=s.matches||[];
+  return `<div class="rk-card"><div class="rk-card-h">${svg("shield")}<h3>Direct sanctions screening</h3><span style="margin-left:auto;font-size:12px;color:#94a3b8">Source: ${esc(s.label||"provider")}</span></div>
+    <div class="rk-note-ok">${svg("shieldCheck")} No result here is automatically a confirmed sanctioned company. Potential matches require manual review.</div>
+    ${!m.length?`<div class="rk-empty-sm" style="margin-top:12px">${svg("shieldCheck")} No sanctions match identified in the lists checked.</div>`
+    :`<div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">${m.map(x=>`<div class="rk-ev"><div class="rk-ev-h"><span class="rk-chip">${x.matchType==="manual_review"?"NEEDS REVIEW":"POTENTIAL"}</span><span class="rk-chip">${esc(x.list||"")}</span><span class="rk-conf rk-conf-medium">match ${Math.round((x.score||0)*100)}%</span></div><div class="rk-ev-title">${esc(x.entity)}</div><div class="rk-ev-body">${esc(x.matchReason||"")}</div>${(x.aliases||[]).length?`<div style="font-size:11px;color:#94a3b8">Aliases: ${x.aliases.map(esc).join(", ")}</div>`:""}<div class="rk-ev-meta">${x.sourceUrl?`<a href="${esc(x.sourceUrl)}" target="_blank" rel="noopener" class="rk-src-link">${svg("externalLink")}Source record</a>`:""}</div></div>`).join("")}</div>`}</div>`;
+}
+function riskTabExposure(res){ if(res.research&&res.research.status!=="ok")return `<div class="rk-card">${riskUnavail("Country exposure",res.research)}</div>`;
+  const exp=res.exposures||[];
+  return `<div class="rk-card"><div class="rk-card-h">${svg("globe")}<h3>Geographic exposure</h3></div>
+    ${riskGeoMap(exp)}
+    <div class="rk-legend">${Object.entries(EXP_CLASS).map(([k,v])=>`<span><i style="background:${v.c}"></i>${v.label}</span>`).join("")}</div>
+    <div style="font-size:11px;color:#64748b;margin:4px 0 12px">Highlighting reflects identified relationships — it does not imply the country itself is sanctioned.</div>
+    ${!exp.length?`<div class="rk-empty-sm">No relationship with a configured jurisdiction identified in the sources checked.</div>`
+    :`<div class="rk-grid rk-grid-3">${exp.map(e=>`<div class="rk-card rk-exp"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-weight:700">${RISK_FLAG[e.name]||""} ${esc(e.name)}</div><span class="rk-chip" style="border-color:${(EXP_CLASS[e.classification]||EXP_CLASS.business).c};color:${(EXP_CLASS[e.classification]||EXP_CLASS.business).c}">${(EXP_CLASS[e.classification]||EXP_CLASS.business).label}</span></div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:6px">${e.count} finding(s) · ${(e.relationships||[]).join(", ")||"relationship"}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">${e.current?"Current":""}${e.current&&e.historical?" & ":""}${e.historical?"Historical":""} · program: ${esc(e.program||"—")}</div></div>`).join("")}</div>`}</div>`;
+}
+function riskTabRelationships(res){ if(res.research&&res.research.status!=="ok")return `<div class="rk-card">${riskUnavail("Relationships",res.research)}</div>`;
+  return `<div class="rk-card"><div class="rk-card-h">${svg("network")}<h3>Relationship network</h3></div>
+    ${riskNetwork(res)}
+    <div class="rk-legend">${[["#2559eb","Target"],["#f59e0b","Country / jurisdiction"],["#dc2626","Potential sanctions match"],["#38bdf8","Related entity"]].map(([c,l])=>`<span><i style="background:${c}"></i>${l}</span>`).join("")}</div>
+    ${risk.node?`<div class="rk-node-panel">${svg("eye")} <b>${esc(risk.node)}</b> — see the Evidence tab for source-backed findings involving this node.</div>`:""}
+    <div style="font-size:11px;color:#64748b;margin-top:8px">A relationship through a transit country does not by itself indicate sanctions evasion. Confidence and evidence are shown per finding.</div></div>`;
+}
+function riskTabPeople(res){ const ppl=res.research&&res.research.status==="ok"?res.research.people:[]; if(res.research&&res.research.status!=="ok")return `<div class="rk-card">${riskUnavail("Directors & key people",res.research)}</div>`;
+  if(!ppl.length)return `<div class="rk-card"><div class="rk-card-h">${svg("users")}<h3>Directors & key people</h3></div><div class="rk-empty-sm">No directors or key persons identified in the sources checked.</div></div>`;
+  return `<div class="rk-card"><div class="rk-card-h">${svg("users")}<h3>Directors & key people</h3></div><div class="rk-grid rk-grid-3">${ppl.map(p=>`<div class="rk-card rk-person"><div class="rk-avatar">${esc((p.name||"?").slice(0,2).toUpperCase())}</div><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)}</div><div style="font-size:12px;color:#94a3b8">${esc(p.role||"—")}${p.nationality&&p.nationality!=="null"?" · "+esc(p.nationality):""}</div><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${p.pep==="yes"?`<span class="rk-chip" style="color:#f59e0b;border-color:#f59e0b">PEP</span>`:""}<span class="rk-conf rk-conf-${p.confidence||'low'}">${esc((p.confidence||"low").replace("_"," "))}</span></div>${p.source_url?`<a href="${esc(p.source_url)}" target="_blank" rel="noopener" class="rk-src-link" style="margin-top:6px;display:inline-flex">${svg("externalLink")}Source</a>`:""}</div></div>`).join("")}</div><div style="font-size:11px;color:#64748b;margin-top:10px">PEP status is a risk factor, not evidence of wrongdoing.</div></div>`;
+}
+function riskTabMedia(res){ const media=res.research&&res.research.status==="ok"?res.research.adverse_media:[]; if(res.research&&res.research.status!=="ok")return `<div class="rk-card">${riskUnavail("Adverse media",res.research)}</div>`;
+  if(!media.length)return `<div class="rk-card"><div class="rk-card-h">${svg("newspaper")}<h3>Adverse media</h3></div><div class="rk-empty-sm">No relevant adverse media identified in the sources checked.</div></div>`;
+  return `<div class="rk-card"><div class="rk-card-h">${svg("newspaper")}<h3>Adverse media</h3></div><div style="display:flex;flex-direction:column;gap:10px">${media.map(a=>`<div class="rk-ev"><div class="rk-ev-h"><span class="rk-chip">${esc(a.category||"other")}</span><span class="rk-chip" style="color:#f59e0b;border-color:#f59e0b">${esc(a.allegation_stage||"unclear")}</span><span class="rk-conf rk-conf-${a.confidence||'low'}">${esc((a.confidence||"low").replace("_"," "))}</span></div><div class="rk-ev-title">${esc(a.headline)}</div>${a.summary?`<div class="rk-ev-body">${esc(a.summary)}</div>`:""}<div class="rk-ev-meta">${a.source?`<span>${esc(a.source)}</span>`:""}${a.date&&a.date!=="null"?`<span>${fdate(a.date)}</span>`:""}${a.source_url?`<a href="${esc(a.source_url)}" target="_blank" rel="noopener" class="rk-src-link">${svg("externalLink")}Read</a>`:""}</div></div>`).join("")}</div><div style="font-size:11px;color:#64748b;margin-top:8px">Allegations and investigations are not findings of fact.</div></div>`;
+}
+function riskTabSources(res){ const p=res.providers||[];
+  return `<div class="rk-card"><div class="rk-card-h">${svg("database")}<h3>Sources checked</h3></div><div style="display:flex;flex-direction:column;gap:8px">${p.map(x=>`<div class="rk-cov-row"><span>${svg(x.key==="sanctions"?"shield":"newspaper")} ${esc(x.label)}</span><span class="rk-cov-${x.status==="ok"?'ok':'no'}">${x.status==="ok"?svg("check")+"Checked":x.status==="provider_unavailable"?svg("circleAlert")+"Not configured":svg("alertTriangle")+"Unavailable"}</span></div>${x.reason?`<div style="font-size:11px;color:#64748b;padding-left:26px">${esc(x.reason)}</div>`:""}`).join("")}</div>
+  <div style="font-size:11px;color:#64748b;margin-top:10px">${svg("circleAlert")} “Not configured / unavailable” is not the same as “no match”. Add provider keys to expand coverage — see SUPABASE_SETUP.md.</div></div>`;
+}
+function riskUnavail(title,prov){ return `<div class="rk-card-h">${svg("circleAlert")}<h3>${esc(title)}</h3></div><div class="rk-unavail">${svg("alertTriangle")}<div><b>Data source ${prov.status==="provider_unavailable"?"not configured":"unavailable"}</b><div style="font-size:12px;color:#94a3b8">${esc(prov.reason||"This provider did not return data. This is not a negative finding — coverage is reduced.")}</div></div></div>`; }
+
+/* ---- risk PDF report (reuses the existing print infrastructure) ---- */
+function riskReportHTML(res){ const findings=risk.findings;
+  const sec=(t,body)=>`<div style="margin-top:18px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#61708c;border-bottom:1px solid #d4d9e2;padding-bottom:4px;margin-bottom:8px">${t}</div>${body}</div>`;
+  const row=(k,v)=>`<div style="display:flex;gap:10px;font-size:12px;padding:2px 0"><span style="width:170px;flex:none;color:#61708c">${k}</span><span style="color:#1f2937">${esc(String(v))}</span></div>`;
+  return `<div class="a4" style="font-size:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0f1420;padding-bottom:12px">
+      <div><div style="font-size:18px;font-weight:800">DrMonster <span style="color:#2559eb">AI</span></div><div style="font-size:11px;color:#61708c">Company Risk Intelligence Report</div></div>
+      <div style="text-align:right;font-size:11px;color:#4c5973">Investigation ${risk.invId?String(risk.invId).slice(0,8):"(unsaved)"}<br>${fdate(res.generatedAt)}</div>
+    </div>
+    <h1 style="font-size:22px;margin:14px 0 2px">${esc(res.company)}</h1>
+    <div style="color:#4c5973">${esc(res.country||"—")}</div>
+    <div style="display:flex;gap:24px;align-items:center;margin-top:14px;padding:12px;border:1px solid #e5e7eb;border-radius:10px">
+      <div style="text-align:center"><div style="font-size:40px;font-weight:800;color:${rlm(res.level).c}">${res.score}</div><div style="font-size:11px;color:#61708c">/ 100 · ${rlm(res.level).label} RISK</div></div>
+      <div style="flex:1;font-size:12px;color:#374151">${esc(res.summary||"")}</div>
+      <div style="text-align:right;font-size:11px;color:#4c5973">Confidence: <b>${esc((res.confidence||"low").replace("_"," "))}</b><br>Data coverage: <b>${res.dataCoverage}%</b></div>
+    </div>
+    ${sec("Key results",row("Direct sanctions",(res.directSanctions||"unknown").toUpperCase())+row("Country exposure",(res.countryExposure||"unknown").toUpperCase())+row("Sanctioned-entity relationships",(res.exposures||[]).some(e=>e.classification==="sanctions_relevant")?"IDENTIFIED (review)":"None identified in sources checked"))}
+    ${sec("Country exposure",(res.exposures||[]).length?(res.exposures.map(e=>`<div style="font-size:12px;padding:2px 0"><b>${esc(e.name)}</b> — ${(EXP_CLASS[e.classification]||EXP_CLASS.business).label} · ${e.count} finding(s) · ${(e.relationships||[]).join(", ")}</div>`).join("")):"No relationship with a configured jurisdiction identified in the sources checked.")}
+    ${sec("Evidence & findings",findings.length?findings.map(f=>`<div style="font-size:11.5px;padding:5px 0;border-bottom:1px solid #eef">${esc((f.category||"").replace(/_/g," "))} — <b>${esc(f.related_entity||f.subject||"")}</b>${f.country?" ("+esc(f.country)+")":""}. ${esc(f.evidence||"")} <span style="color:#61708c">[${esc(f.confidence||"low")} confidence${f.source_url?" · "+esc(f.source_url):""}]</span></div>`).join(""):"No findings recorded.")}
+    ${sec("Sources checked",(res.providers||[]).map(p=>`<div style="font-size:12px">${esc(p.label)} — ${p.status==="ok"?"Checked":p.status==="provider_unavailable"?"Not configured":"Unavailable"}</div>`).join(""))}
+    ${sec("Methodology",`<div style="font-size:11.5px;color:#4c5973">Direct sanctions screening uses an authoritative sanctions provider; relationship, ownership, trade and adverse-media intelligence uses cited web research. The risk score is the sum of weighted, evidence-based factors (configurable). Data coverage is reported separately. Potential matches are not confirmed determinations.</div>`)}
+    <div style="margin-top:18px;font-size:10px;color:#8290a8;border-top:1px solid #d4d9e2;padding-top:8px">DrMonster Company Risk Intelligence provides decision-support information based on the data sources available at the time of the investigation. Results may contain incomplete information, false positives or false negatives and are not legal advice or a definitive sanctions determination. Material findings should be independently verified before any compliance, banking, contractual or legal decision.</div>
+  </div>`;
+}
+function exportRiskReport(){ const res=risk.result; if(!res)return; const root=document.getElementById("print-root"); root.innerHTML=riskReportHTML(res); window.print(); }
+
 /* ---- platform module launcher ---- */
 function viewSections(){
   const cards=SECTIONS.map(s=>{
@@ -1283,6 +1846,7 @@ function viewTemplates(){
 const VIEWS={
   dashboard:viewDashboard, companies:viewCompanies, new:viewNew, invoice:viewNew, contract:viewContract, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
   templates:viewTemplates,
+  "risk-home":viewRiskHome, "risk-new":viewRiskNew, "risk-list":viewRiskList, "risk-view":viewRiskView, "risk-watchlist":viewRiskWatch,
 };
 
 function render(){
@@ -2067,6 +2631,20 @@ document.addEventListener("click",e=>{
   const id=a.dataset.id;
   if(act==="enter-section"){ const s=SECTIONS.find(x=>x.id===id&&x.enabled); if(s){ section=s.id; route=(MODULES[s.id]||{}).home||"dashboard"; window.scrollTo(0,0); render(); } return; }
   if(act==="exit-section"){ section=""; window.scrollTo(0,0); render(); return; }
+  // ---- Company Risk Intelligence ----
+  if(act==="risk-go-new"){ risk.result=null; risk.invId=null; risk.saved=false; risk.error=""; route="risk-new"; window.scrollTo(0,0); render(); return; }
+  if(act==="risk-adv"){ risk.adv=!risk.adv; render(); return; }
+  if(act==="risk-run"){ runRiskCheck(); return; }
+  if(act==="risk-open"){ riskOpen(id); return; }
+  if(act==="risk-del"){ riskDelete(id); return; }
+  if(act==="risk-rerun"){ const inv=(risk.list||[]).find(x=>x.id===id); riskRerun(inv&&inv.company_name, inv&&inv.country); return; }
+  if(act==="risk-save"){ riskSave(); return; }
+  if(act==="risk-watch"){ riskWatchToggle(); return; }
+  if(act==="risk-watch-rm"){ riskWatchRemove(id); return; }
+  if(act==="risk-report"){ exportRiskReport(); return; }
+  if(act==="risk-tab"){ risk.tab=id; render(); return; }
+  if(act==="risk-node"){ risk.tab="evidence"; render(); return; }
+  if(act==="risk-decide"){ riskDecision(id, a.dataset.v); return; }
   if(act==="co-new"){modal={editing:null};editDraft=emptyCompany();render();}
   if(act==="co-edit"){const c=companies.find(x=>x.id===id);modal={editing:c};editDraft={...c,bank:{...(c.bank||{})}};render();}
   if(act==="co-del"){deleteCompany(id);}
@@ -2116,6 +2694,7 @@ document.addEventListener("click",e=>{
 });
 
 document.addEventListener("input",e=>{
+  const rkf=e.target.dataset.rkf; if(rkf){ risk.form[rkf]=e.target.value; return; }
   const cf=e.target.dataset.cfield; if(cf){ connect[cf]=e.target.value; return; }
   const af=e.target.dataset.afield; if(af){ auth[af]=e.target.value; return; }
   const sf=e.target.dataset.sfield; if(sf){ if(sf==="nextSeq"){ settings.numbering.nextSeq=Math.max(1,parseInt(e.target.value||"1",10)||1); } else { settings.numbering[sf]=e.target.value; } const pv=document.getElementById("num-preview"); if(pv)pv.textContent=projectedNumber(new Date().toISOString().slice(0,10)); return; }
@@ -2143,6 +2722,7 @@ document.addEventListener("input",e=>{
   if(mf&&editDraft){ editDraft[mf]=e.target.value; if(mf==="name"){ const save=document.querySelector('[data-act="save-co"]'); if(save)save.disabled=!editDraft.name.trim()||busy; } }
 });
 document.addEventListener("change",e=>{
+  if(e.target.dataset.act==="risk-demo"){ risk.demo=e.target.checked; return; }
   if(e.target.id==="doc-upload-input"){ const f=e.target.files&&e.target.files[0]; if(f)handleUpload(f); e.target.value=""; return; }
   if(e.target.id==="brand-logo-input"){ const file=e.target.files&&e.target.files[0]; e.target.value=""; if(!file)return; if(!validLogo(file)){ toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true); return; } fileToDataUrl(file).then(dataUrl=>{ brand.pending={file,dataUrl,name:file.name}; render(); }).catch(()=>toast("Could not read that file.",true)); return; }
   if(e.target.id==="co-logo-input"){ const file=e.target.files&&e.target.files[0]; if(!file)return; if(!validLogo(file)){toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true);e.target.value="";return;} toast("Uploading logo…"); uploadLogo(file).then(path=>{ if(editDraft){editDraft.logoPath=path;editDraft.logoKey=path;} render(); }).catch(err=>toast("Logo upload failed: "+err.message,true)); e.target.value=""; return; }

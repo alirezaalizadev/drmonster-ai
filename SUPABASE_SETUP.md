@@ -4,12 +4,14 @@ The app now stores companies, documents and logos in **Supabase** (Database +
 Auth + Storage) instead of in-browser demo data. Follow these steps once.
 
 > ### ⚠️ Already set this up before? Re-run the schema.
-> The production invoice system added new database columns and a settings table.
-> Open **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql) again —
-> it is idempotent and uses `add column if not exists`, so re-running is safe and
-> only adds what's missing. **Save draft / Save & finalize will error until you do
-> this** (you'll see "column documents.number_mode does not exist" or
-> "table public.app_settings not found").
+> The production invoice system, Contract Maker and now **Company Risk Intelligence**
+> added new database columns and tables. Open **SQL Editor** and run
+> [`supabase/schema.sql`](supabase/schema.sql) again — it is idempotent and uses
+> `add column/table if not exists`, so re-running is safe and only adds what's
+> missing. **Save draft / Save & finalize, and saving a risk investigation, will
+> error until you do this** (e.g. "column documents.number_mode does not exist",
+> "table public.app_settings not found", or "relation public.risk_investigations
+> does not exist").
 
 ## 1. Create a Supabase project
 1. Go to <https://supabase.com/dashboard> and sign in.
@@ -141,6 +143,55 @@ to `claude-opus-5`; override with `supabase secrets set ANTHROPIC_MODEL=claude-s
 
 ---
 
+## Company Risk Intelligence (separate module)
+
+**Company Risk Intelligence** is a standalone module (its own sidebar entry, routes,
+tables and screening engine) — completely independent of Document Maker. It screens a
+company for **direct sanctions**, **country/geographic exposure**, **ownership and key
+people**, **trade relationships**, **PEPs** and **adverse media**, then produces an
+explainable risk score with cited evidence.
+
+### It never fabricates findings
+The engine distinguishes a **provider being unavailable** from an actual **"no match"**.
+With no external data providers configured it still runs, but honestly reports reduced
+coverage and unavailable sources — it will not invent sanctions hits, owners, directors,
+shipments, relationships or news.
+
+### 1. Database (required to *save* investigations)
+Re-run [`supabase/schema.sql`](supabase/schema.sql) (see the box at the top). It adds
+`risk_investigations`, `risk_findings` and `risk_watchlist` with owner-only RLS. You can
+run investigations without saving, but saving/history/watchlist need these tables.
+
+### 2. Deploy the screening engine (required to *run* investigations)
+The screening logic and all provider secrets live in one Edge Function. Deploy it the
+same way as the others:
+```bash
+supabase functions deploy risk-screen
+```
+It reuses the **same `ANTHROPIC_API_KEY` secret** you already set for the AI assistant to
+perform **cited web research** (relationships, ownership, adverse media) via Claude's
+web-search tool. Until it's deployed, **Run Full Risk Check** will say the engine isn't
+deployed. **Demo mode** in the New Check screen works without any of this — it renders
+clearly-labelled *sample* data (never saved) so you can preview the interface.
+
+### 3. Add a sanctions data provider (optional, recommended for real sanctions data)
+Direct sanctions screening uses a configurable **OpenSanctions-compatible** provider. To
+enable authoritative sanctions matching, set an API key as a server secret:
+```bash
+supabase secrets set OPENSANCTIONS_API_KEY=your-key
+# optional overrides:
+# supabase secrets set SANCTIONS_API_URL=https://api.opensanctions.org
+# supabase secrets set RISK_JURISDICTIONS='[{"code":"IR","name":"Iran","program":"comprehensive"}, ...]'
+```
+Without it, the report clearly shows **"sanctions provider not configured"** in the
+Sanctions and Sources tabs — which is *not* the same as "no match".
+
+> Everything sensitive stays server-side in `risk-screen`; no provider key is ever sent
+> to the browser. Requests are authenticated with the user's Supabase login and all risk
+> data is protected by owner-only Row Level Security.
+
+---
+
 ### What lives where
 | Data | Location |
 |------|----------|
@@ -151,6 +202,8 @@ to `claude-opus-5`; override with `supabase secrets set ANTHROPIC_MODEL=claude-s
 | Auth (users, sessions) | Supabase Auth |
 | AI assistant + document analysis (Claude) | `ai-invoice` + `ai-document` Edge Functions — Anthropic key is a shared server secret |
 | Uploaded original documents (PDF/DOCX/PNG/JPG) | `source-documents` **private** storage bucket (write-once, preserved) |
+| Company risk investigations, findings, watchlist | `public.risk_investigations` / `risk_findings` / `risk_watchlist` tables |
+| Risk screening engine + provider secrets (sanctions, web research) | `risk-screen` Edge Function — `ANTHROPIC_API_KEY` (shared) + optional `OPENSANCTIONS_API_KEY` |
 
 ### Security notes
 - The frontend uses **only** the public **anon** key. No `service_role` key is

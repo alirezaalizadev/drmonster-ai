@@ -243,4 +243,90 @@ create policy sources_delete_own on storage.objects
   for delete to authenticated
   using (bucket_id = 'source-documents' and (storage.foldername(name))[1] = auth.uid()::text);
 
+-- =============================================================================
+-- COMPANY RISK INTELLIGENCE  (standalone module — separate from Document Maker)
+-- Owner-only RLS, same convention as the rest of the app. Safe / idempotent.
+-- =============================================================================
+create table if not exists public.risk_investigations (
+  id                  uuid primary key default gen_random_uuid(),
+  user_id             uuid not null references auth.users(id) on delete cascade,
+  company_name        text not null,
+  country             text,
+  registration_number text,
+  website             text,
+  address             text,
+  status              text default 'complete',   -- running | complete | error
+  risk_score          int  default 0,
+  risk_level          text default 'unknown',    -- low | moderate | high | critical | unknown
+  confidence          text default 'low',        -- very_high | high | medium | low
+  data_coverage       int  default 0,            -- 0..100
+  direct_sanctions    text default 'unknown',    -- clear | potential | match | unknown | unavailable
+  country_exposure    text default 'unknown',    -- clear | low | moderate | high | critical | unknown | unavailable
+  summary             text,
+  providers           jsonb default '[]'::jsonb, -- audit: [{key,label,status,checkedAt,dataDate,version}]
+  result              jsonb,                     -- full normalized dashboard snapshot
+  watchlisted         boolean default false,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+create index if not exists risk_investigations_user_idx on public.risk_investigations(user_id, created_at desc);
+
+create table if not exists public.risk_findings (
+  id               uuid primary key default gen_random_uuid(),
+  user_id          uuid not null references auth.users(id) on delete cascade,
+  investigation_id uuid not null references public.risk_investigations(id) on delete cascade,
+  category         text,      -- sanctions | country_exposure | relationship | ownership | director | pep | adverse_media | corporate | trade
+  subject          text,      -- entity the finding is about
+  related_entity   text,
+  country          text,
+  relationship     text,      -- distributor | supplier | subsidiary | shareholder | ubo | director | customer | ...
+  match_type       text,      -- confirmed | potential | no_match | manual_review | info
+  temporality      text,      -- current | historical | unknown
+  directness       text,      -- direct | indirect | unknown
+  confidence       text,      -- very_high | high | medium | low
+  evidence         text,
+  source           text,
+  source_url       text,
+  evidence_date    date,
+  retrieved_at     timestamptz default now(),
+  decision         text default 'open',  -- open | confirmed | potential | false_positive | needs_review | dismissed
+  decision_note    text,
+  decided_at       timestamptz,
+  data             jsonb,
+  created_at       timestamptz not null default now()
+);
+create index if not exists risk_findings_inv_idx on public.risk_findings(investigation_id);
+create index if not exists risk_findings_user_idx on public.risk_findings(user_id);
+
+create table if not exists public.risk_watchlist (
+  id               uuid primary key default gen_random_uuid(),
+  user_id          uuid not null references auth.users(id) on delete cascade,
+  investigation_id uuid references public.risk_investigations(id) on delete set null,
+  company_name     text not null,
+  country          text,
+  last_score       int,
+  last_level       text,
+  created_at       timestamptz not null default now()
+);
+create index if not exists risk_watchlist_user_idx on public.risk_watchlist(user_id);
+
+drop trigger if exists risk_investigations_set_updated_at on public.risk_investigations;
+create trigger risk_investigations_set_updated_at
+  before update on public.risk_investigations
+  for each row execute function public.set_updated_at();
+
+alter table public.risk_investigations enable row level security;
+alter table public.risk_findings enable row level security;
+alter table public.risk_watchlist enable row level security;
+
+drop policy if exists risk_inv_all_own on public.risk_investigations;
+create policy risk_inv_all_own on public.risk_investigations
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists risk_find_all_own on public.risk_findings;
+create policy risk_find_all_own on public.risk_findings
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists risk_watch_all_own on public.risk_watchlist;
+create policy risk_watch_all_own on public.risk_watchlist
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 -- Done.
