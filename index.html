@@ -298,6 +298,26 @@
     html,body{background:#fff!important}
     #print-root .a4{box-shadow:none!important;margin:0 auto}
   }
+
+  /* platform sections + two-level navigation */
+  .nav-item.nav-soon{cursor:default;opacity:.45}
+  .nav-item.nav-soon:hover{background:transparent;color:var(--ink-300)}
+  .soon-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5a6577;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:1px 6px;flex:none}
+  .nav-back{display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--ink-300);cursor:pointer;border-radius:9px}
+  .nav-back:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nav-module{padding:2px 12px 10px;font-size:15px;font-weight:700;color:#fff;letter-spacing:-.01em}
+  .sec-grid{margin-top:4px}
+  .sec-card{padding:22px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:.15s}
+  .sec-card:not(.sec-disabled):hover{border-color:var(--brand);box-shadow:0 8px 24px -12px rgba(37,89,235,.4);transform:translateY(-1px)}
+  .sec-card .sec-ic{width:42px;height:42px;border-radius:10px;background:var(--brand-50);color:var(--brand);display:flex;align-items:center;justify-content:center}
+  .sec-card .sec-ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .sec-title{font-size:15px;font-weight:600;margin-top:8px}
+  .sec-desc{font-size:12.5px;color:var(--ink-500);line-height:1.5;flex:1}
+  .sec-card .chip{align-self:flex-start;margin-top:6px}
+  .sec-card .chip svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:middle}
+  .sec-disabled{cursor:default;opacity:.6;background:var(--ink-50)}
+  .sec-disabled .sec-ic{background:var(--ink-100);color:var(--ink-400)}
+  .sec-soon{color:var(--ink-400)!important}
 </style>
 </head>
 <body>
@@ -450,11 +470,28 @@ const IC = {
 };
 const svg = k => `<svg viewBox="0 0 24 24">${IC[k]}</svg>`;
 
-const NAV = [
-  ["Workspace",[["Dashboard","dashboard","dash"],["New Document","new","newdoc"],["Edit Document","edit","editdoc"]]],
-  ["Library",[["Companies","companies","co"],["Templates","templates","tpl"],["Documents","documents","docs"]]],
-  ["System",[["Settings","settings","set"]]],
+/* ---------------- platform sections (top level) + per-module internal nav ---------------- */
+let section = "";   // "" = platform launcher; otherwise a module id (e.g. "docmaker")
+const SECTIONS = [
+  { id:"docmaker", label:"Document Maker", desc:"Create invoices & contracts, and manage companies, templates and documents.", icon:"docs", enabled:true },
+  { id:"soon2", label:"Coming Soon", desc:"A future DrMonster module.", icon:"tpl",     enabled:false },
+  { id:"soon3", label:"Coming Soon", desc:"A future DrMonster module.", icon:"co",      enabled:false },
+  { id:"soon4", label:"Coming Soon", desc:"A future DrMonster module.", icon:"editdoc", enabled:false },
+  { id:"soon5", label:"Coming Soon", desc:"A future DrMonster module.", icon:"trend",   enabled:false },
+  { id:"soon6", label:"Coming Soon", desc:"A future DrMonster module.", icon:"set",     enabled:false },
 ];
+// Each module declares its own internal sidebar nav + default ("home") route.
+// Add a future module by registering its id in SECTIONS (enabled:true) and here — no app restructure needed.
+const MODULES = {
+  docmaker: {
+    home: "dashboard",
+    nav: [
+      ["Workspace",[["Overview","dashboard","dash"],["New Document","new","newdoc"],["Invoice Maker","invoice","editdoc"],["Contract Maker","contract","tpl"]]],
+      ["Library",[["Companies","companies","co"],["Templates","templates","tpl"],["Documents","documents","docs"]]],
+      ["System",[["Settings","settings","set"]]],
+    ],
+  },
+};
 
 /* ---------------- state ---------------- */
 let route = "dashboard";
@@ -480,10 +517,19 @@ function freshDraft(){
 
 /* ---------------- render ---------------- */
 function renderNav(){
-  document.getElementById("nav").innerHTML = NAV.map(([sec,items])=>`
-    <div class="nav-group"><div class="nav-label">${sec}</div>
-    ${items.map(([label,r,ic])=>`<div class="nav-item ${route===r?'active':''}" data-route="${r}">${svg(ic)}${label}</div>`).join("")}
-    </div>`).join("");
+  const nav=document.getElementById("nav");
+  if(!section){
+    // Top-level: list the platform modules.
+    nav.innerHTML = `<div class="nav-group"><div class="nav-label">Platform</div>`+
+      SECTIONS.map(s=>`<div class="nav-item ${s.enabled?'':'nav-soon'}"${s.enabled?` data-act="enter-section" data-id="${s.id}"`:''}>${svg(s.icon)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.label}</span>${s.enabled?'':'<span class="soon-badge">Soon</span>'}</div>`).join("")+
+      `</div>`;
+    return;
+  }
+  // Inside a module: back-to-modules link + the module's internal nav.
+  const mod=MODULES[section]; const label=(SECTIONS.find(s=>s.id===section)||{}).label||section;
+  nav.innerHTML = `<div class="nav-back" data-act="exit-section"><span style="font-size:16px;line-height:1;margin-right:2px">‹</span> All modules</div>
+    <div class="nav-module">${esc(label)}</div>`+
+    (mod?mod.nav:[]).map(([sec,items])=>`<div class="nav-group"><div class="nav-label">${sec}</div>${items.map(([lb,r,ic])=>`<div class="nav-item ${route===r?'active':''}" data-route="${r}">${svg(ic)}${lb}</div>`).join("")}</div>`).join("");
 }
 
 function topbar(title,sub,crumb,action){
@@ -732,7 +778,7 @@ function viewNew(){
 
 /* ---- Documents ---- */
 function viewDocuments(){
-  const action=`<button class="btn btn-primary" data-route="new">${svg('plus')}New Invoice</button>`;
+  const action=`<div style="display:flex;gap:8px"><button class="btn btn-secondary" data-route="edit">${svg('editdoc')}Import / edit</button><button class="btn btn-primary" data-route="new">${svg('plus')}New Invoice</button></div>`;
   let body;
   if(!invoices.length){body=`<div class="card empty-state"><div class="ic">${svg('docs')}</div><h3 style="margin:16px 0 0">No documents yet</h3><p style="color:var(--ink-500)">Generate your first invoice to see it here.</p></div>`;}
   else body=`<div class="card" style="overflow:hidden"><table><thead><tr><th>Invoice</th><th>Seller</th><th>Buyer</th><th>Date</th><th class="num">Total</th><th class="num">Status</th><th></th></tr></thead>
@@ -880,8 +926,24 @@ function viewEdit(){
     <tbody>${drafts.map(i=>{const t=computeTotals(i.items,i.currency);return `<tr data-act="open-doc" data-id="${i.id}" style="cursor:pointer"><td style="font-weight:500;color:var(--ink-900)">${esc(i.number||"—")}${i.revision>1?` <span class="chip chip-brand" style="padding:1px 7px;font-size:11px">R${i.revision}</span>`:""}${i.source?` <span class="chip chip-white" style="padding:1px 7px;font-size:11px">from upload</span>`:""}</td><td style="color:var(--ink-600)">${esc(i.seller?i.seller.name:"—")}</td><td style="color:var(--ink-600)">${esc(i.buyer?i.buyer.name:"—")}</td><td style="color:var(--ink-500)">${fdate(i.date)}</td><td class="num" style="font-weight:500">${money(t.total,i.currency)}</td><td class="num"><div style="display:inline-flex;gap:2px;align-items:center;justify-content:flex-end"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--brand)" data-act="open-doc" data-id="${i.id}">Edit ${svg('arrow')}</button><button class="btn btn-ghost" title="Delete document" style="padding:4px 8px;color:var(--ink-400)" data-act="del-doc" data-id="${i.id}">${svg('trash')}</button></div></td></tr>`;}).join("")}</tbody></table></div>`;
   return topbar("Edit Document","Upload an existing invoice to revise it, or resume a draft.",["Workspace","Edit Document"],action)+`<div class="container">${drop}${list}</div>`;
 }
+/* ---- platform module launcher ---- */
+function viewSections(){
+  const cards=SECTIONS.map(s=>{
+    const dis=!s.enabled;
+    return `<div class="card sec-card ${dis?'sec-disabled':''}"${dis?'':` data-act="enter-section" data-id="${s.id}"`}>
+      <div class="sec-ic">${svg(s.icon)}</div>
+      <div class="sec-title">${esc(s.label)}</div>
+      <div class="sec-desc">${esc(s.desc)}</div>
+      ${dis?'<span class="chip chip-white sec-soon">Coming soon</span>':`<span class="chip chip-brand">Open ${svg('arrow')}</span>`}
+    </div>`;
+  }).join("");
+  return `<header class="topbar"><div class="topbar-inner"><div><div class="crumb"><span>DrMonster Platform</span></div><h1 class="page">Modules</h1><p class="subtitle">Choose a module to get started — more are on the way.</p></div></div></header>
+    <div class="container"><div class="grid cols-3 sec-grid">${cards}</div></div>`;
+}
+
 const VIEWS={
-  dashboard:viewDashboard, companies:viewCompanies, new:viewNew, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
+  dashboard:viewDashboard, companies:viewCompanies, new:viewNew, invoice:viewNew, documents:viewDocuments, settings:viewSettings, edit:viewEdit,
+  contract:()=>viewComing("Contract Maker",["Document Maker","Contract Maker"],"Draft commercial contracts using the same verified companies, revisions and export tools as invoices.",["Contract templates with a reusable clause library","Party & signatory blocks pulled from your Companies","Revisions, PDF/DOCX export and AI-assisted drafting"]),
   templates:()=>viewComing("Templates",["Library","Templates"],"Reusable layouts for invoices and contracts so every document stays on-brand.",["Commercial invoice, proforma and packing list layouts","Contract templates with clause library","Per-company default terms and branding"]),
 };
 
@@ -893,6 +955,7 @@ function render(){
   if(appState==="loading"){ app.classList.add("auth-mode"); main.innerHTML=viewLoading(); return; }
   app.classList.remove("auth-mode");
   renderNav(); renderSideUser();
+  if(!section){ main.innerHTML=viewSections(); return; }   // platform launcher (module not entered)
   main.innerHTML=(VIEWS[route]||viewDashboard)()+drawer()+previewOverlay()+aiProposalOverlay()+delOverlay();
 }
 
@@ -1508,18 +1571,20 @@ function zipStore(entries){
 /* ---------------- events ---------------- */
 document.addEventListener("submit",e=>{ const a=e.target.closest('[data-act="auth-submit"]'); if(a){ e.preventDefault(); doAuth(); } });
 document.addEventListener("click",e=>{
-  const a=e.target.closest("[data-act]");
+  const a=e.target&&e.target.closest&&e.target.closest("[data-act]");
   const act=a&&a.dataset.act;
   // auth / connection
   if(act==="save-connect"){ if(!connect.url.trim()||!connect.key.trim()){connect.error="Enter both the project URL and the anon key.";render();return;} connect.error=""; SB.setConfig(connect.url,connect.key); render(); return; }
   if(act==="auth-toggle"){ auth.mode=auth.mode==="signup"?"signin":"signup"; auth.error=""; auth.notice=""; render(); return; }
   if(act==="reconnect"){ SB.clearConfig(); connect.url=SB.url; connect.key=SB.key; render(); return; }
-  if(act==="sign-out"){ SB.signOut().then(()=>{ companies=[]; invoices=[]; for(const k in files)delete files[k]; draft=null; genMsg=null; route="dashboard"; render(); }); return; }
+  if(act==="sign-out"){ SB.signOut().then(()=>{ companies=[]; invoices=[]; for(const k in files)delete files[k]; draft=null; genMsg=null; section=""; route="dashboard"; render(); }); return; }
   if(act==="disconnect"){ SB.signOut().then(()=>{ SB.clearConfig(); connect.url=""; connect.key=""; companies=[]; invoices=[]; render(); }); return; }
   // navigation ("New Document" always starts a clean draft when the current one is saved/locked)
-  const r=e.target.closest("[data-route]"); if(r){ const nr=r.dataset.route; preview=null; ai.proposal=null; if(nr==="new" && draft && (draft.id||isFinalized(draft))){ draft=freshDraft(); ai.instruction=""; ai.error=""; } route=nr; window.scrollTo(0,0); render(); return; }
+  const r=e.target&&e.target.closest&&e.target.closest("[data-route]"); if(r){ const nr=r.dataset.route; preview=null; ai.proposal=null; if(nr==="new" && draft && (draft.id||isFinalized(draft))){ draft=freshDraft(); ai.instruction=""; ai.error=""; } route=nr; window.scrollTo(0,0); render(); return; }
   if(!a)return;
   const id=a.dataset.id;
+  if(act==="enter-section"){ const s=SECTIONS.find(x=>x.id===id&&x.enabled); if(s){ section=s.id; route=(MODULES[s.id]||{}).home||"dashboard"; window.scrollTo(0,0); render(); } return; }
+  if(act==="exit-section"){ section=""; window.scrollTo(0,0); render(); return; }
   if(act==="co-new"){modal={editing:null};editDraft=emptyCompany();render();}
   if(act==="co-edit"){const c=companies.find(x=>x.id===id);modal={editing:c};editDraft={...c,bank:{...(c.bank||{})}};render();}
   if(act==="co-del"){deleteCompany(id);}
