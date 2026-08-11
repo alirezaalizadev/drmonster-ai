@@ -449,6 +449,7 @@ function isFinalized(d){ return d && (d.status==="finalized"||d.status==="genera
 /* ---------------- data layer ---------------- */
 async function bootData(){
   await loadSettings();
+  await ensureBrandLogo();
   const rows=await SB.select("companies","select=*&order=created_at.desc");
   companies=rows.map(coFromRow);
   await Promise.all(companies.filter(c=>c.logoPath).map(c=>ensureLogo(c.logoPath)));
@@ -462,10 +463,85 @@ function measureFile(file,dataUrl){ return new Promise(res=>{ if((file.type||"")
 async function uploadLogo(file){ const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"); const path=`${SB.uid}/${Math.random().toString(36).slice(2,10)}-${safe}`; await SB.upload(LOGO_BUCKET,path,file); const dataUrl=await fileToDataUrl(file); const dims=await measureFile(file,dataUrl); files[path]={key:path,name:file.name,mimeType:file.type||"image/png",dataUrl,width:dims.w,height:dims.h}; return path; }
 
 /* ---------------- settings + invoice numbering (generator-controlled) ---------------- */
-function defaultSettings(){ return { numbering:{ pattern:"DM-{YYYY}-{SEQ:4}", nextSeq:1 } }; }
+function defaultSettings(){ return { numbering:{ pattern:"DM-{YYYY}-{SEQ:4}", nextSeq:1 }, branding:{ logoPath:null, size:"medium" } }; }
 let settings = defaultSettings();
-function mergeSettings(d){ const s=defaultSettings(); if(d&&d.numbering){ s.numbering.pattern=typeof d.numbering.pattern==="string"?d.numbering.pattern:s.numbering.pattern; s.numbering.nextSeq=Number.isFinite(d.numbering.nextSeq)?d.numbering.nextSeq:s.numbering.nextSeq; } return s; }
+function mergeSettings(d){ const s=defaultSettings(); if(d&&d.numbering){ s.numbering.pattern=typeof d.numbering.pattern==="string"?d.numbering.pattern:s.numbering.pattern; s.numbering.nextSeq=Number.isFinite(d.numbering.nextSeq)?d.numbering.nextSeq:s.numbering.nextSeq; } if(d&&d.branding){ s.branding.logoPath=typeof d.branding.logoPath==="string"?d.branding.logoPath:null; s.branding.size=["small","medium","large"].includes(d.branding.size)?d.branding.size:"medium"; } return s; }
 async function loadSettings(){ try{ const rows=await SB.select("app_settings","select=data"); settings = (rows&&rows.length&&rows[0].data)?mergeSettings(rows[0].data):defaultSettings(); }catch(e){ settings=defaultSettings(); } }
+
+/* ---------------- MAIN APP / BRAND LOGO (separate from company logos on documents) ---------------- */
+// Stored in the existing company-logos bucket + referenced from app_settings.data.branding.
+// A copy of the data URL is cached in localStorage so the login screen (pre-auth) can show it.
+const BRAND_LSK={logo:"drm_brand_logo",size:"drm_brand_size"};
+let brand = { url:null, pending:null };  // url=signed url when signed in; pending={file,dataUrl,name} before save
+function cachedBrandLogo(){ try{return localStorage.getItem(BRAND_LSK.logo)||null;}catch(e){return null;} }
+function cacheBrand(dataUrl,size){ try{ if(dataUrl)localStorage.setItem(BRAND_LSK.logo,dataUrl); else localStorage.removeItem(BRAND_LSK.logo); if(size)localStorage.setItem(BRAND_LSK.size,size); }catch(e){} }
+function brandSize(){ return (settings&&settings.branding&&settings.branding.size) || (()=>{try{return localStorage.getItem(BRAND_LSK.size)||"medium";}catch(e){return "medium";}})(); }
+function brandLogoSrc(){ if(brand.pending)return brand.pending.dataUrl; if(brand.url)return brand.url; return cachedBrandLogo(); }
+async function ensureBrandLogo(){
+  brand.pending=null;
+  const p=settings.branding&&settings.branding.logoPath;
+  if(!p){ brand.url=null; return; }
+  try{ const u=await SB.signedUrl(LOGO_BUCKET,p,3600); brand.url=u||cachedBrandLogo(); }catch(e){ brand.url=cachedBrandLogo(); }
+}
+function defaultMarkSvg(px){ return `<svg viewBox="0 0 24 24" width="${px}" height="${px}" fill="none"><circle cx="9.5" cy="12" r="1.4" fill="#fff"/><circle cx="14.5" cy="12" r="1.4" fill="#fff"/><path d="M6 10.5C6 8.6 7.6 7 9.5 7h5C16.4 7 18 8.6 18 10.5V17l-1.6-1.1a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0l-.8-.6a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0L8.4 15.9a1 1 0 0 0-1.2 0L6 17z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>`; }
+// The main app logo mark. Custom logo: white tile, aspect preserved (object-fit:contain), never stretched, transparency-friendly.
+function brandMark(kind){
+  const src=brandLogoSrc(); const h={small:30,medium:38,large:52}[brandSize()]||38;
+  if(src) return `<span class="mark" style="background:#fff;height:${h}px;min-width:${h}px;width:auto;padding:4px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none"><img src="${esc(src)}" alt="app logo" style="max-height:100%;max-width:${Math.round(h*2.8)}px;object-fit:contain;display:block"></span>`;
+  return `<span class="mark">${defaultMarkSvg(kind==="auth"?24:22)}</span>`;
+}
+function renderBrand(){
+  const b=document.querySelector(".sidebar .brand"); if(!b)return;
+  b.innerHTML=brandMark("sidebar")+`<div><div class="title">DrMonster <span>AI</span></div><div class="sub">Document Studio</div></div>`;
+}
+function brandingCard(){
+  const savedPath=settings.branding&&settings.branding.logoPath;
+  const src=brandLogoSrc();
+  const sizeSeg=[["small","Small"],["medium","Medium"],["large","Large"]].map(([v,l])=>`<button type="button" class="seg ${brandSize()===v?'seg-on':''}" data-act="brand-size" data-v="${v}">${l}</button>`).join("");
+  const previewImg = src
+    ? `<div style="height:64px;min-width:64px;max-width:220px;background:#fff;border:1px solid var(--ink-200);border-radius:10px;display:flex;align-items:center;justify-content:center;padding:8px;flex:none"><img src="${esc(src)}" alt="logo preview" style="max-height:100%;max-width:200px;object-fit:contain;display:block"></div>`
+    : `<div style="height:64px;width:64px;background:var(--brand);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none">${defaultMarkSvg(30)}</div>`;
+  return `<div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Branding — main app logo</h2>
+    <p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">Replaces the DrMonster mark in the sidebar, header, login screen and dashboard. Separate from the company logos used on invoices and contracts.</p>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:16px">
+      ${previewImg}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${brand.pending?"New logo (preview)":(savedPath?"Custom logo":"Default logo")}</div>
+        <div style="font-size:12px;color:var(--ink-400);margin-top:2px">${brand.pending?esc(brand.pending.name)+" — not saved yet":(savedPath?"Saved to Supabase storage":"Using the built-in DrMonster mark")}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          ${brand.pending
+            ? `<button class="btn btn-primary" data-act="brand-save" ${busy?'disabled':''}>${busy?"Saving…":"Save logo"}</button><button class="btn btn-ghost" data-act="brand-cancel" ${busy?'disabled':''}>Cancel</button>`
+            : `<button class="btn btn-secondary" data-act="brand-pick">${savedPath?"Replace logo":"Upload logo"}</button>${savedPath?`<button class="btn btn-ghost" data-act="brand-remove" style="color:#b42318" ${busy?'disabled':''}>Remove logo</button>`:""}`}
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px"><label class="lbl">Logo size</label><div class="row-3" style="max-width:320px">${sizeSeg}</div></div>
+    <div style="font-size:12px;color:var(--ink-400);margin-top:8px">PNG, JPG, JPEG, WebP or SVG · aspect ratio preserved · transparent backgrounds supported.</div>
+    <input type="file" accept="${ALLOWED_LOGO}" id="brand-logo-input" style="display:none">
+  </div>`;
+}
+async function saveBrandLogo(){
+  if(busy||!brand.pending)return; busy=true; render();
+  try{
+    const oldPath=settings.branding.logoPath;
+    const path=await uploadLogo(brand.pending.file);   // reuse existing uploader (company-logos bucket, owner-RLS)
+    settings.branding.logoPath=path;
+    await saveSettings();
+    if(oldPath&&oldPath!==path) SB.removeObject(LOGO_BUCKET,oldPath);
+    brand.url=(files[path]&&files[path].dataUrl)||brand.pending.dataUrl;
+    cacheBrand(brand.pending.dataUrl, settings.branding.size);
+    brand.pending=null; busy=false; render(); toast("Main app logo updated.");
+  }catch(err){ busy=false; render(); toast("Could not save logo: "+(err.message||err),true); }
+}
+async function removeBrandLogo(){
+  if(busy)return; const p=settings.branding.logoPath; busy=true; render();
+  try{
+    settings.branding.logoPath=null; await saveSettings();
+    if(p) SB.removeObject(LOGO_BUCKET,p);
+    brand.url=null; brand.pending=null; cacheBrand(null,settings.branding.size);
+    busy=false; render(); toast("Main app logo removed — using the default.");
+  }catch(err){ busy=false; render(); toast("Could not remove logo: "+(err.message||err),true); }
+}
 async function saveSettings(){ const row={ user_id:SB.uid, data:settings, updated_at:new Date().toISOString() }; await SB.rest("app_settings?on_conflict=user_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},body:JSON.stringify(row)}); }
 // Turn a pattern + sequence + date into an invoice number. Tokens: {YYYY}{YY}{MM}{DD}{SEQ} / {SEQ:n}
 function formatInvoiceNumber(pattern,seq,dateStr){
@@ -1049,6 +1125,7 @@ function viewComing(title,crumb,desc,planned){
 }
 function viewSettings(){
   return topbar("Settings","Workspace preferences and secure storage.",["System","Settings"])+`<div class="container"><div style="display:flex;flex-direction:column;gap:24px">
+    ${brandingCard()}
     <div class="card" style="padding:24px"><h2 style="margin:0;font-size:14px;font-weight:600">Workspace</h2><p style="margin:4px 0 0;color:var(--ink-500);font-size:14px">DrMonster AI — commercial invoices with live A4 preview, backed by Supabase.</p>
       <div class="grid cols-3 mt4">
         <div style="border:1px solid var(--ink-200);border-radius:8px;padding:16px"><div style="font-size:12px;color:var(--ink-400)">Companies</div><div style="font-size:20px;font-weight:600;margin-top:4px">${companies.length}</div></div>
@@ -1125,7 +1202,7 @@ function drawer(){
 }
 
 /* ---- Auth / connection screens ---- */
-function authBrand(){ return `<div class="auth-brand"><span class="mark"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="9.5" cy="12" r="1.4" fill="#fff"/><circle cx="14.5" cy="12" r="1.4" fill="#fff"/><path d="M6 10.5C6 8.6 7.6 7 9.5 7h5C16.4 7 18 8.6 18 10.5V17l-1.6-1.1a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0l-.8-.6a1 1 0 0 0-1.2 0l-.8.6a1 1 0 0 1-1.2 0L8.4 15.9a1 1 0 0 0-1.2 0L6 17z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span><div><div class="title">DrMonster <span>AI</span></div><div class="sub">Document Studio</div></div></div>`; }
+function authBrand(){ return `<div class="auth-brand">${brandMark("auth")}<div><div class="title">DrMonster <span>AI</span></div><div class="sub">Document Studio</div></div></div>`; }
 function viewConnect(){
   return `<div class="auth-wrap"><div class="auth-card">${authBrand()}
     <h2>Connect Supabase</h2><p class="lead">Enter your Supabase project URL and public anon key to enable secure storage.</p>
@@ -1215,7 +1292,7 @@ function render(){
   if(!SB.session){ app.classList.add("auth-mode"); main.innerHTML=viewLogin(); return; }
   if(appState==="loading"){ app.classList.add("auth-mode"); main.innerHTML=viewLoading(); return; }
   app.classList.remove("auth-mode");
-  renderNav(); renderSideUser();
+  renderNav(); renderSideUser(); renderBrand();
   if(!section){ main.innerHTML=viewSections(); return; }   // platform launcher (module not entered)
   main.innerHTML=(VIEWS[route]||viewDashboard)()+drawer()+previewOverlay()+aiProposalOverlay()+delOverlay();
 }
@@ -2025,6 +2102,11 @@ document.addEventListener("click",e=>{
   if(act==="export-pdf"){ exportPDF(preview?preview.doc:draft); }
   if(act==="export-docx"){ toast("Preparing DOCX…"); exportDOCX(preview?preview.doc:draft); }
   if(act==="save-numbering"){ saveNumbering(); }
+  if(act==="brand-pick"){ const el=document.getElementById("brand-logo-input"); if(el)el.click(); }
+  if(act==="brand-save"){ saveBrandLogo(); }
+  if(act==="brand-cancel"){ brand.pending=null; render(); }
+  if(act==="brand-remove"){ removeBrandLogo(); }
+  if(act==="brand-size"){ if(settings.branding){ settings.branding.size=a.dataset.v; cacheBrand(cachedBrandLogo(), settings.branding.size); saveSettings().catch(()=>{}); render(); } }
   if(act==="lmode"){draft.logoMode=a.dataset.v;render();}
   if(act==="lsize"){draft.logoSize=a.dataset.v;render();}
   if(act==="co-logo-pick"){const el=document.getElementById("co-logo-input");if(el)el.click();}
@@ -2062,6 +2144,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
   if(e.target.id==="doc-upload-input"){ const f=e.target.files&&e.target.files[0]; if(f)handleUpload(f); e.target.value=""; return; }
+  if(e.target.id==="brand-logo-input"){ const file=e.target.files&&e.target.files[0]; e.target.value=""; if(!file)return; if(!validLogo(file)){ toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true); return; } fileToDataUrl(file).then(dataUrl=>{ brand.pending={file,dataUrl,name:file.name}; render(); }).catch(()=>toast("Could not read that file.",true)); return; }
   if(e.target.id==="co-logo-input"){ const file=e.target.files&&e.target.files[0]; if(!file)return; if(!validLogo(file)){toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true);e.target.value="";return;} toast("Uploading logo…"); uploadLogo(file).then(path=>{ if(editDraft){editDraft.logoPath=path;editDraft.logoKey=path;} render(); }).catch(err=>toast("Logo upload failed: "+err.message,true)); e.target.value=""; return; }
   if(e.target.id==="inv-logo-input"){ const file=e.target.files&&e.target.files[0]; if(!file)return; if(!validLogo(file)){toast("Unsupported file type. Use PNG, JPG, JPEG, WebP or SVG.",true);e.target.value="";return;} toast("Uploading logo…"); uploadLogo(file).then(path=>{ if(draft){draft.customLogoKey=path;draft.logoMode="custom";} render(); }).catch(err=>toast("Logo upload failed: "+err.message,true)); e.target.value=""; return; }
   const f=e.target.dataset.field;
